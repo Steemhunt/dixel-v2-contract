@@ -1,8 +1,8 @@
 # Dixel Club V2
 
 Pixel Art NFT factory that users can:
-1. Create a new NFT collection with a 16x16 pixel art canvas
-2. Mint a new edition on an existing collection with color variations
+1. Create a new NFT collection with a 24x24 pixel art canvas
+2. Mint a new edition on an existing collection with color variations (traits)
 
 ## Run Tests
 ```bash
