@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import "./Constants.sol";
+import "./Shared.sol";
 import "./DixelClubV2NFT.sol";
 
 /**
@@ -11,8 +12,6 @@ import "./DixelClubV2NFT.sol";
 * Create an ERC721 Dixel Club NFTs using proxy pattern to save gas
 */
 contract DixelClubV2Factory is Constants {
-    IERC20 public baseToken;
-
     /**
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
@@ -22,11 +21,10 @@ contract DixelClubV2Factory is Constants {
     // Array of all created nft collections
     address[] public collections;
 
-    event CollectionCreated(address indexed nftAddress, string indexed symbol, string name);
+    event CollectionCreated(address indexed nftAddress, string name, string symbol);
 
-    constructor(address baseTokenAddress) {
-        nftImplementation = address(new DixelClubV2NFT(baseTokenAddress));
-        baseToken = IERC20(baseTokenAddress);
+    constructor() {
+        nftImplementation = address(new DixelClubV2NFT());
     }
 
     function _createClone(address target) private returns (address result) {
@@ -43,29 +41,25 @@ contract DixelClubV2Factory is Constants {
     function createCollection(
         string memory name,
         string memory symbol,
-        string memory description,
-        bool whitelistOnly,
-        uint24 maxSupply,
-        uint80 mintingCost,
-        uint24 royaltyFriction,
-        uint40 mintingBeginsFrom,
+        Shared.MetaData memory metaData,
         uint24[PALETTE_SIZE] memory palette,
-        uint8[CANVAS_SIZE][CANVAS_SIZE] memory pixels
-    ) public returns (address) {
+        uint8[TOTAL_PIXEL_COUNT] memory pixels
+    ) external returns (address) {
         require(bytes(name).length > 0, 'NAME_CANNOT_BE_BLANK');
         require(bytes(symbol).length > 0, 'SYMBOL_CANNOT_BE_BLANK');
-        require(bytes(description).length > 0, 'DESCRIPTION_CANNOT_BE_BLANK');
-        require(maxSupply > 0 && maxSupply <= MAX_SUPPLY, 'INVALID_MAX_SUPPLY');
-        require(mintingCost >= 0 && mintingCost <= MAX_MINTING_COST, 'INVALID_MINTING_COST');
-        require(royaltyFriction >= 0 && royaltyFriction <= MAX_ROYALTY_FRACTION, 'INVALID_ROYALTY_FRICTION');
+        require(bytes(metaData.description).length > 0, 'DESCRIPTION_CANNOT_BE_BLANK');
+        require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, 'INVALID_MAX_SUPPLY');
+        require(metaData.royaltyFriction >= 0 && metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, 'INVALID_ROYALTY_FRICTION');
+
+        // TODO: check if palette contains 0 -> if so, it should be on index 0 to save gas
 
         address nftAddress = _createClone(nftImplementation);
         DixelClubV2NFT newNFT = DixelClubV2NFT(nftAddress);
-        newNFT.init(msg.sender, name, symbol, description, whitelistOnly, maxSupply, mintingCost, royaltyFriction, mintingBeginsFrom, palette, pixels);
+        newNFT.init(msg.sender, name, symbol, metaData, palette, pixels);
 
         collections.push(nftAddress);
 
-        emit CollectionCreated(nftAddress, symbol, name);
+        emit CollectionCreated(nftAddress, name, symbol);
 
         return nftAddress;
     }

@@ -9,7 +9,7 @@ import "./Constants.sol";
 /**
 * @title Dixel SVG image generator
 */
-contract SVGGenerator is Constants {
+abstract contract SVGGenerator is Constants {
     /* solhint-disable quotes */
     string private constant HEADER = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 640 640"><rect id="p" width="40" height="40"/>';
     string private constant FOOTER = '</svg>';
