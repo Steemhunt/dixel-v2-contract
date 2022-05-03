@@ -61,29 +61,31 @@ contract("DixelClubV2Factory", function(accounts) {
       expect(await this.collection.symbol()).to.equal(TEST_DATA.symbol);
     });
 
-    // it("should have correct collection meta data", async function() {
-    //   const [
-    //     , // name
-    //     , // symbol
-    //     whitelistOnly,
-    //     maxSupply,
-    //     royaltyFriction,
-    //     mintingBeginsFrom,
-    //     mintingCost,
-    //     description,
-    //     , // totalSupply
-    //     pixels
-    //   ] = await this.collection.collectionMetaData();
+    it("should have correct collection meta data", async function() {
+      const [
+        , // name
+        , // symbol
+        whitelistOnly,
+        maxSupply,
+        royaltyFriction,
+        mintingBeginsFrom,
+        mintingCost,
+        description,
+        , // totalSupply
+        pixels
+      ] = Object.values(await this.collection.collectionMetaData());
 
-    //   expect(whitelistOnly).to.equal(TEST_DATA.metaData.whitelistOnly);
-    //   expect(maxSupply).to.equal(TEST_DATA.metaData.maxSupply);
-    //   expect(royaltyFriction).to.equal(TEST_DATA.metaData.maxSupply);
-    //   expect(mintingBeginsFrom).to.equal(TEST_DATA.metaData.maxSupply);
-    //   expect(mintingCost).to.equal(TEST_DATA.metaData.maxSupply);
-    //   expect(description).to.equal(TEST_DATA.metaData.maxSupply);
+      expect(whitelistOnly).to.equal(TEST_DATA.metaData.whitelistOnly);
+      expect(maxSupply).to.be.bignumber.equal(String(TEST_DATA.metaData.maxSupply));
+      expect(royaltyFriction).to.be.bignumber.equal(String(TEST_DATA.metaData.royaltyFriction));
+      expect(mintingBeginsFrom).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingBeginsFrom));
+      expect(mintingCost).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingCost));
+      expect(description).to.equal(TEST_DATA.metaData.description);
 
-    //   // TODO: compare pixels
-    // });
+      for(const i in TEST_INPUT.pixels) {
+        expect(pixels[i]).to.be.bignumber.equal(String(TEST_INPUT.pixels[i]));
+      }
+    });
 
     it('should emit CollectionCreated event', async function() {
       expectEvent(this.receipt, 'CollectionCreated', { nftAddress: this.collection.address, name: TEST_DATA.name, symbol: TEST_DATA.symbol });
@@ -110,7 +112,14 @@ contract("DixelClubV2Factory", function(accounts) {
         expect(await this.collection.ownerOf(0)).to.equal(alice);
       });
 
-      // TODO: more edition data - palette, pixels, etc
+      it("should have correct palette data", async function () {
+        const palette = await this.collection.paletteOf(0);
+        for(const i in TEST_INPUT.palette) {
+          expect(palette[i]).to.be.bignumber.equal(String(TEST_INPUT.palette[i]));
+        }
+      });
+
+      // TODO: more edition data - tokenURI
     });
   });
 });

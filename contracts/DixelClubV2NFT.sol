@@ -175,6 +175,10 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         pixels_ = pixels;
     }
 
+    function paletteOf(uint256 tokenId) external view returns (uint24[PALETTE_SIZE] memory) {
+        return _editionData[tokenId].palette;
+    }
+
 
     // MARK: - Override extensions
 
