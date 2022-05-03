@@ -11,6 +11,8 @@ npx hardhat test
 
 ## Contracts
 
+### Ethereum Testnet
+
 ### Klaytn Testnet
 
 ### BSC Testnet
