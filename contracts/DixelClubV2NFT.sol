@@ -89,10 +89,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         return _generateSVG(_editionData[tokenId].palette, pixels);
     }
 
-    function generateSVG2(uint256 tokenId) external view returns (string memory) {
-        return _generateSVG2(_editionData[tokenId].palette, pixels);
-    }
-
     // function generateBase64SVG(uint256 tokenId) public view returns (string memory) {
     //     return _generateBase64SVG(getPixelsFor(tokenId));
     // }
