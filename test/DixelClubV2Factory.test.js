@@ -119,7 +119,21 @@ contract("DixelClubV2Factory", function(accounts) {
         }
       });
 
+      it.only("should have generate correct SVG image", async function() {
+        // const svg = fs.readFileSync(`${__dirname}/fixtures/image-output.svg`, 'utf8');
+
+        const time1 = Date.now();
+        const svg1 = await this.collection.generateSVG(0);
+        console.log(svg1);
+        console.log('--------------------------------------------------- Time1: ', Date.now() - time1);
+
+        const time2 = Date.now();
+        const svg2 = await this.collection.generateSVG2(0);
+        console.log(svg2);
+        console.log('--------------------------------------------------- Time2: ', Date.now() - time2);
+        // expect(await this.collection.generateSVG(0)).to.equal(svg);
+      });
       // TODO: more edition data - tokenURI
     });
-  });
+  }); // create a collection
 });

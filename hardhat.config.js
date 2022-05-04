@@ -77,7 +77,7 @@ module.exports = {
     apiKey: process.env.BSCSCAN_API_KEY
   },
   mocha: {
-    timeout: 60000 // 1 minute for test timeout
+    timeout: 120000 // 2 minutes for test timeout
   }
 };
 
