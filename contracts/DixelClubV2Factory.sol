@@ -49,7 +49,7 @@ contract DixelClubV2Factory is Constants {
         require(bytes(symbol).length > 0, 'SYMBOL_CANNOT_BE_BLANK');
         require(bytes(metaData.description).length > 0, 'DESCRIPTION_CANNOT_BE_BLANK');
         require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, 'INVALID_MAX_SUPPLY');
-        require(metaData.royaltyFriction >= 0 && metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, 'INVALID_ROYALTY_FRICTION');
+        require(metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, 'INVALID_ROYALTY_FRICTION');
 
         // TODO: check if palette contains 0 -> if so, it should be on index 0 to save gas
 

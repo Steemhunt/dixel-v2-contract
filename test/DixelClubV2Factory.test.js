@@ -119,11 +119,48 @@ contract("DixelClubV2Factory", function(accounts) {
         }
       });
 
-      it.only("should have generate correct SVG image", async function() {
+      it("should have generate correct SVG image", async function() {
         const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg.svg`, 'utf8');
         expect(await this.collection.generateSVG(0)).to.equal(svg);
       });
       // TODO: more edition data - tokenURI
     });
   }); // create a collection
+
+  describe("create a collection - validation", function() {
+    beforeEach(async function() {
+      this.testParams = [
+        TEST_DATA.name,
+        TEST_DATA.symbol,
+        Object.values(TEST_DATA.metaData),
+        TEST_INPUT.palette,
+        TEST_INPUT.pixels,
+        { from: alice }
+      ];
+    });
+    it('should check if name is blank', async function() {
+      this.testParams[0] = '';
+      await expectRevert(this.factory.createCollection(...this.testParams), 'NAME_CANNOT_BE_BLANK');
+    });
+    it('should check if symbol is blank', async function() {
+      this.testParams[1] = '';
+      await expectRevert(this.factory.createCollection(...this.testParams), 'SYMBOL_CANNOT_BE_BLANK');
+    });
+    it('should check if description is blank', async function() {
+      this.testParams[2][5] = '';
+      await expectRevert(this.factory.createCollection(...this.testParams), 'DESCRIPTION_CANNOT_BE_BLANK');
+    });
+    it('should check if maxSupply is over 0', async function() {
+      this.testParams[2][1] = 0;
+      await expectRevert(this.factory.createCollection(...this.testParams), 'INVALID_MAX_SUPPLY');
+    });
+    it('should check if maxSupply is less than the max value', async function() {
+      this.testParams[2][1] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
+      await expectRevert(this.factory.createCollection(...this.testParams), 'INVALID_MAX_SUPPLY');
+    });
+    it('should check if royaltyFriction is less than the max value', async function() {
+      this.testParams[2][2] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
+      await expectRevert(this.factory.createCollection(...this.testParams), 'INVALID_ROYALTY_FRICTION');
+    });
+  });
 });
