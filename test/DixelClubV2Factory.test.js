@@ -22,7 +22,7 @@ const TEST_DATA = {
 };
 
 contract("DixelClubV2Factory", function(accounts) {
-  const [ deployer, alice ] = accounts;
+  const [ deployer, alice, bob ] = accounts;
 
   beforeEach(async function() {
     this.factory = await DixelClubV2Factory.new();
@@ -43,6 +43,45 @@ contract("DixelClubV2Factory", function(accounts) {
     });
   });
 
+  // TODO: updateBeneficiary
+
+  describe("create a collection - validation", function() {
+    beforeEach(async function() {
+      this.testParams = [
+        TEST_DATA.name,
+        TEST_DATA.symbol,
+        Object.values(TEST_DATA.metaData),
+        TEST_INPUT.palette,
+        TEST_INPUT.pixels,
+        { from: alice }
+      ];
+    });
+    it("should check if name is blank", async function() {
+      this.testParams[0] = "";
+      await expectRevert(this.factory.createCollection(...this.testParams), "NAME_CANNOT_BE_BLANK");
+    });
+    it("should check if symbol is blank", async function() {
+      this.testParams[1] = "";
+      await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CANNOT_BE_BLANK");
+    });
+    it("should check if description is blank", async function() {
+      this.testParams[2][5] = "";
+      await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CANNOT_BE_BLANK");
+    });
+    it("should check if maxSupply is over 0", async function() {
+      this.testParams[2][1] = 0;
+      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
+    });
+    it("should check if maxSupply is less than the max value", async function() {
+      this.testParams[2][1] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
+      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
+    });
+    it("should check if royaltyFriction is less than the max value", async function() {
+      this.testParams[2][2] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
+      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_ROYALTY_FRICTION");
+    });
+  });
+
   describe("create a collection", function() {
     beforeEach(async function() {
       this.receipt = await this.factory.createCollection(
@@ -53,7 +92,7 @@ contract("DixelClubV2Factory", function(accounts) {
         TEST_INPUT.pixels,
         { from: alice }
       );
-      this.collection = await DixelClubV2NFT.at(this.receipt.logs[0].args.nftAddress);
+      this.collection = await DixelClubV2NFT.at(this.receipt.logs[1].args.nftAddress);
     });
 
     it("should have correct ERC721 attributes", async function() {
@@ -103,6 +142,8 @@ contract("DixelClubV2Factory", function(accounts) {
       expect(await this.collection.owner()).to.equal(alice);
     });
 
+    // TODO: minting fee
+
     describe("should mint #0 edition to the creator", function() {
       it("should mint #0 edition", async function() {
         expect(await this.collection.totalSupply()).to.be.bignumber.equal("1");
@@ -123,44 +164,8 @@ contract("DixelClubV2Factory", function(accounts) {
         const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg.svg`, 'utf8');
         expect(await this.collection.generateSVG(0)).to.equal(svg);
       });
+
       // TODO: more edition data - tokenURI
     });
   }); // create a collection
-
-  describe("create a collection - validation", function() {
-    beforeEach(async function() {
-      this.testParams = [
-        TEST_DATA.name,
-        TEST_DATA.symbol,
-        Object.values(TEST_DATA.metaData),
-        TEST_INPUT.palette,
-        TEST_INPUT.pixels,
-        { from: alice }
-      ];
-    });
-    it('should check if name is blank', async function() {
-      this.testParams[0] = '';
-      await expectRevert(this.factory.createCollection(...this.testParams), 'NAME_CANNOT_BE_BLANK');
-    });
-    it('should check if symbol is blank', async function() {
-      this.testParams[1] = '';
-      await expectRevert(this.factory.createCollection(...this.testParams), 'SYMBOL_CANNOT_BE_BLANK');
-    });
-    it('should check if description is blank', async function() {
-      this.testParams[2][5] = '';
-      await expectRevert(this.factory.createCollection(...this.testParams), 'DESCRIPTION_CANNOT_BE_BLANK');
-    });
-    it('should check if maxSupply is over 0', async function() {
-      this.testParams[2][1] = 0;
-      await expectRevert(this.factory.createCollection(...this.testParams), 'INVALID_MAX_SUPPLY');
-    });
-    it('should check if maxSupply is less than the max value', async function() {
-      this.testParams[2][1] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
-      await expectRevert(this.factory.createCollection(...this.testParams), 'INVALID_MAX_SUPPLY');
-    });
-    it('should check if royaltyFriction is less than the max value', async function() {
-      this.testParams[2][2] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
-      await expectRevert(this.factory.createCollection(...this.testParams), 'INVALID_ROYALTY_FRICTION');
-    });
-  });
 });

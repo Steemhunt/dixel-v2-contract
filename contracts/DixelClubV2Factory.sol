@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Constants.sol";
 import "./Shared.sol";
 import "./DixelClubV2NFT.sol";
@@ -11,12 +12,15 @@ import "./DixelClubV2NFT.sol";
 *
 * Create an ERC721 Dixel Club NFTs using proxy pattern to save gas
 */
-contract DixelClubV2Factory is Constants {
+contract DixelClubV2Factory is Constants, Ownable {
     /**
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
      */
-    address public nftImplementation;
+    address payable public nftImplementation;
+    address public beneficiary;
+    uint256 public creationFee = 1e19; // 10 DIXEL
+    uint256 public mintingFee = 500; // 5%;
 
     // Array of all created nft collections
     address[] public collections;
@@ -24,10 +28,10 @@ contract DixelClubV2Factory is Constants {
     event CollectionCreated(address indexed nftAddress, string name, string symbol);
 
     constructor() {
-        nftImplementation = address(new DixelClubV2NFT());
+        nftImplementation = payable(address(new DixelClubV2NFT()));
     }
 
-    function _createClone(address target) private returns (address result) {
+    function _createClone(address target) private returns (address payable result) {
         bytes20 targetBytes = bytes20(target);
         assembly {
             let clone := mload(0x40)
@@ -44,16 +48,18 @@ contract DixelClubV2Factory is Constants {
         Shared.MetaData memory metaData,
         uint24[PALETTE_SIZE] memory palette,
         uint8[TOTAL_PIXEL_COUNT] memory pixels
-    ) external returns (address) {
-        require(bytes(name).length > 0, 'NAME_CANNOT_BE_BLANK');
-        require(bytes(symbol).length > 0, 'SYMBOL_CANNOT_BE_BLANK');
-        require(bytes(metaData.description).length > 0, 'DESCRIPTION_CANNOT_BE_BLANK');
-        require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, 'INVALID_MAX_SUPPLY');
-        require(metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, 'INVALID_ROYALTY_FRICTION');
+    ) external returns (address payable) {
+        require(bytes(name).length > 0, "NAME_CANNOT_BE_BLANK");
+        require(bytes(symbol).length > 0, "SYMBOL_CANNOT_BE_BLANK");
+        require(bytes(metaData.description).length > 0, "DESCRIPTION_CANNOT_BE_BLANK");
+        require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, "INVALID_MAX_SUPPLY");
+        require(metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, "INVALID_ROYALTY_FRICTION");
+
+        // TODO: Take creation fee by DIXEL tokens
 
         // TODO: check if palette contains 0 -> if so, it should be on index 0 to save gas
 
-        address nftAddress = _createClone(nftImplementation);
+        address payable nftAddress = _createClone(nftImplementation);
         DixelClubV2NFT newNFT = DixelClubV2NFT(nftAddress);
         newNFT.init(msg.sender, name, symbol, metaData, palette, pixels);
 
@@ -63,6 +69,17 @@ contract DixelClubV2Factory is Constants {
 
         return nftAddress;
     }
+
+    function updateBeneficiary(address newAddress, uint256 newMintingFee, uint256 newCreationFee) external onlyOwner {
+        require(newAddress != address(0), "BENEFICIARY_CANNOT_BE_NULL");
+        require(newMintingFee <= FRICTION_BASE, "INVALID_FEE_FRICTION");
+
+        beneficiary = newAddress;
+        mintingFee = newMintingFee;
+        creationFee = newCreationFee;
+    }
+
+    // MARK: - Utility functions
 
     function collectionCount() external view returns (uint256) {
         return collections.length;

@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "base64-sol/base64.sol";
 import "./lib/ERC721Enumerable.sol";
 import "./lib/ColorUtils.sol";
+import "./DixelClubV2Factory.sol";
 import "./Shared.sol";
 import "./SVGGenerator.sol"; // inheriting Constants
 
@@ -22,6 +23,7 @@ import "./SVGGenerator.sol"; // inheriting Constants
 contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdTracker;
+    DixelClubV2Factory private _factory;
 
     bool private _initialized;
 
@@ -48,6 +50,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         require(_initialized == false, "CONTRACT_ALREADY_INITIALIZED");
         _initialized = true;
 
+        _factory = DixelClubV2Factory(msg.sender);
+
         // ERC721 attributes
         _name = name_;
         _symbol = symbol_;
@@ -60,13 +64,27 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         _transferOwnership(owner_);
 
         // Mint edition #0 to the creator with the default palette set automatically
-        mint(owner_, palette_);
+        _mintNewEdition(owner_, palette_);
     }
 
-    function mint(address to, uint24[PALETTE_SIZE] memory palette) public {
+    receive() external payable {}
 
-        // TODO: Pay fee
+    function mint(address to, uint24[PALETTE_SIZE] memory palette) public payable {
+        require(msg.value == metaData.mintingCost, "INVALID_MINTING_COST_SENT");
 
+        // Send fee to the beneficiary
+        uint256 fee = msg.value * _factory.mintingFee() / FRICTION_BASE;
+        (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
+        require(sent, "FEE_TRANSFER_FAILED");
+
+        // Send the rest of minting cost to the collection creator
+        (bool sent2, ) = (owner()).call{ value: msg.value - fee }("");
+        require(sent2, "MINTING_COST_TRANSFER_FAILED");
+
+        _mintNewEdition(to, palette);
+    }
+
+    function _mintNewEdition(address to, uint24[PALETTE_SIZE] memory palette) private {
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         uint256 tokenId = _tokenIdTracker.current();
@@ -196,6 +214,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         // 1. The same royalty friction for all tokens in the same collection
         // 2. Receiver is collection owner
 
-        return (owner(), (_salePrice * metaData.royaltyFriction) / 10000);
+        return (owner(), (_salePrice * metaData.royaltyFriction) / FRICTION_BASE);
     }
 }
