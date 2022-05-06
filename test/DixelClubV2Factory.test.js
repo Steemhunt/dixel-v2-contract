@@ -1,4 +1,3 @@
-const { ethers } = require('hardhat');
 const { ether, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256, ZERO_ADDRESS } = constants;
 const { expect } = require("chai");
@@ -22,7 +21,7 @@ const TEST_DATA = {
 };
 
 contract("DixelClubV2Factory", function(accounts) {
-  const [ deployer, alice, bob ] = accounts;
+  const [ deployer, alice ] = accounts;
 
   beforeEach(async function() {
     this.factory = await DixelClubV2Factory.new();
