@@ -3,6 +3,8 @@
 // - COMPILE_MODE
 
 require('dotenv').config();
+require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
 
 const path = require('path');
 const argv = require('yargs/yargs')()
@@ -19,7 +21,6 @@ require('solidity-coverage');
 require('hardhat-gas-reporter');
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-web3');
-require("@nomiclabs/hardhat-etherscan");
 require("hardhat-interface-generator");
 
 /**
@@ -38,6 +39,13 @@ module.exports = {
   networks: {
     hardhat: {
       blockGasLimit: 60000000,
+    },
+    goerli: {
+      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ARCHEMY_GOERLI_API_KEY}`,
+      chainId: 5,
+      gasPrice: 5000000000, // 5 gwei
+      blockGasLimit: 29000000, // 29M
+      accounts: [process.env.GOERLI_TEST_PRIVATE_KEY]
     },
     bsctest: {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
@@ -74,7 +82,7 @@ module.exports = {
     coinmarketcap: process.env.COIN_MARKET_CAP_API
   },
   etherscan: {
-    apiKey: process.env.BSCSCAN_API_KEY
+    apiKey: process.env.ETHERSCAN_API_KEY // process.env.BSCSCAN_API_KEY
   },
   mocha: {
     timeout: 120000 // 2 minutes for test timeout
