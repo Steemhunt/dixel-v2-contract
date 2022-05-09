@@ -70,6 +70,13 @@ contract DixelClubV2Factory is Constants, Ownable {
         return nftAddress;
     }
 
+    // MARK: Admin functions
+
+    // This will update NFT contract implementaion and it won't affect existing collections
+    function updateImplementation(address payable newImplementation) external onlyOwner {
+        nftImplementation = newImplementation;
+    }
+
     function updateBeneficiary(address newAddress, uint256 newMintingFee, uint256 newCreationFee) external onlyOwner {
         require(newAddress != address(0), "BENEFICIARY_CANNOT_BE_NULL");
         require(newMintingFee <= FRICTION_BASE, "INVALID_FEE_FRICTION");

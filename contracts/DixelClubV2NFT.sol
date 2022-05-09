@@ -70,16 +70,20 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     receive() external payable {}
 
     function mint(address to, uint24[PALETTE_SIZE] memory palette) public payable {
-        require(msg.value == metaData.mintingCost, "INVALID_MINTING_COST_SENT");
+        uint256 mintingCost = metaData.mintingCost;
 
-        // Send fee to the beneficiary
-        uint256 fee = msg.value * _factory.mintingFee() / FRICTION_BASE;
-        (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
-        require(sent, "FEE_TRANSFER_FAILED");
+        require(msg.value == mintingCost, "INVALID_MINTING_COST_SENT");
 
-        // Send the rest of minting cost to the collection creator
-        (bool sent2, ) = (owner()).call{ value: msg.value - fee }("");
-        require(sent2, "MINTING_COST_TRANSFER_FAILED");
+        if (mintingCost > 0) {
+            // Send fee to the beneficiary
+            uint256 fee = mintingCost * _factory.mintingFee() / FRICTION_BASE;
+            (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
+            require(sent, "FEE_TRANSFER_FAILED");
+
+            // Send the rest of minting cost to the collection creator
+            (bool sent2, ) = (owner()).call{ value: mintingCost - fee }("");
+            require(sent2, "MINTING_COST_TRANSFER_FAILED");
+        }
 
         _mintNewEdition(to, palette);
     }

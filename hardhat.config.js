@@ -78,7 +78,7 @@ module.exports = {
   },
   gasReporter: {
     currency: 'USD',
-    gasPrice: 1, // HACK For BSC: 5 gewei * 552/4012
+    gasPrice: 50,
     coinmarketcap: process.env.COIN_MARKET_CAP_API
   },
   etherscan: {

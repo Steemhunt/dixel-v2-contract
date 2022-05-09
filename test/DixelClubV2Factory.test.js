@@ -42,6 +42,8 @@ contract("DixelClubV2Factory", function(accounts) {
     });
   });
 
+  // TODO: updateImplementation
+
   // TODO: updateBeneficiary
 
   describe("create a collection - validation", function() {
@@ -159,7 +161,7 @@ contract("DixelClubV2Factory", function(accounts) {
         }
       });
 
-      it("should have generate correct SVG image", async function() {
+      it("should generate a correct SVG image with theh original palette", async function() {
         const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg.svg`, 'utf8');
         expect(await this.collection.generateSVG(0)).to.equal(svg);
       });
