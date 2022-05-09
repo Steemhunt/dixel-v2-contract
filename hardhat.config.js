@@ -41,7 +41,7 @@ module.exports = {
       blockGasLimit: 60000000,
     },
     goerli: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ARCHEMY_GOERLI_API_KEY}`,
+      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_GOERLI_API_KEY}`,
       chainId: 5,
       gasPrice: 5000000000, // 5 gwei
       blockGasLimit: 29000000, // 29M
