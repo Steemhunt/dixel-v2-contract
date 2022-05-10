@@ -65,10 +65,6 @@ contract("DixelClubV2Factory", function(accounts) {
       this.testParams[1] = "";
       await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CANNOT_BE_BLANK");
     });
-    it("should check if description is blank", async function() {
-      this.testParams[2][5] = "";
-      await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CANNOT_BE_BLANK");
-    });
     it("should check if maxSupply is over 0", async function() {
       this.testParams[2][1] = 0;
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
@@ -80,6 +76,18 @@ contract("DixelClubV2Factory", function(accounts) {
     it("should check if royaltyFriction is less than the max value", async function() {
       this.testParams[2][2] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_ROYALTY_FRICTION");
+    });
+    it("should check if description is over 1,000 characters", async function() {
+      this.testParams[2][5] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
+      await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_TOO_LONG");
+    });
+    it("should check if symbol contains a quote", async function() {
+      this.testParams[1] = 'SYMBOL"';
+      await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CONTAINS_MALICIOUS_CHARACTER");
+    });
+    it("should check if description contains a quote", async function() {
+      this.testParams[2][5] = 'what ever ""';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
     });
   });
 
@@ -161,12 +169,12 @@ contract("DixelClubV2Factory", function(accounts) {
         }
       });
 
-      it("should generate a correct SVG image with theh original palette", async function() {
+      it("should generate a correct SVG image with the original palette", async function() {
         const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg.svg`, 'utf8');
         expect(await this.collection.generateSVG(0)).to.equal(svg);
       });
 
-      // TODO: more edition data - tokenURI
+      // Other NFT tests will be done on DixelClubV2NFT.test.js
     });
   }); // create a collection
 });

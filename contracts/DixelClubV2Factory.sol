@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./lib/StringUtils.sol";
 import "./Constants.sol";
 import "./Shared.sol";
 import "./DixelClubV2NFT.sol";
@@ -51,9 +52,13 @@ contract DixelClubV2Factory is Constants, Ownable {
     ) external returns (address payable) {
         require(bytes(name).length > 0, "NAME_CANNOT_BE_BLANK");
         require(bytes(symbol).length > 0, "SYMBOL_CANNOT_BE_BLANK");
-        require(bytes(metaData.description).length > 0, "DESCRIPTION_CANNOT_BE_BLANK");
+        require(bytes(metaData.description).length <= 1000, "DESCRIPTION_TOO_LONG"); // ~900 gas per character
         require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, "INVALID_MAX_SUPPLY");
         require(metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, "INVALID_ROYALTY_FRICTION");
+
+        // Validate `symbol` and `description` to ensure generateJSON() creates a valid JSON
+        require(!StringUtils.contains(symbol, 0x22), 'SYMBOL_CONTAINS_MALICIOUS_CHARACTER');
+        require(!StringUtils.contains(metaData.description, 0x22), 'DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER');
 
         // TODO: Take creation fee by DIXEL tokens
 

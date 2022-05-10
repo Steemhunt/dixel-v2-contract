@@ -27,7 +27,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     bool private _initialized;
 
-    uint8[TOTAL_PIXEL_COUNT] public pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
+    uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
     Shared.MetaData public metaData; // Collection meta data
 
     struct EditionData {
@@ -38,6 +38,13 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     mapping(address => uint24) whitelist; // users -> max minting count
 
     event Mint(address indexed to, uint256 indexed tokenId);
+
+    receive() external payable {}
+
+    modifier checkTokenExists(uint256 tokenId) {
+        require(_exists(tokenId), "NONEXISTENT_TOKEN");
+        _;
+    }
 
     function init(
         address owner_,
@@ -58,7 +65,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         // Custom attributes
         metaData = metaData_;
-        pixels = pixels_;
+        _pixels = pixels_;
 
         // Transfer ownership to the collection creator, so he/she can edit info on marketplaces like Opeansea
         _transferOwnership(owner_);
@@ -66,8 +73,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         // Mint edition #0 to the creator with the default palette set automatically
         _mintNewEdition(owner_, palette_);
     }
-
-    receive() external payable {}
 
     function mint(address to, uint24[PALETTE_SIZE] memory palette) public payable {
         uint256 mintingCost = metaData.mintingCost;
@@ -102,66 +107,36 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         emit Mint(to, tokenId);
     }
 
-
-    // function getPixelsFor(uint256 tokenId) public view returns (uint24[CANVAS_SIZE][CANVAS_SIZE] memory) {
-    //     return history[tokenId].pixels;
-    // }
-
-    function generateSVG(uint256 tokenId) external view returns (string memory) {
-        return _generateSVG(_editionData[tokenId].palette, pixels);
+    function generateSVG(uint256 tokenId) external view checkTokenExists(tokenId) returns (string memory) {
+        return _generateSVG(_editionData[tokenId].palette, _pixels);
     }
 
-    // function generateBase64SVG(uint256 tokenId) public view returns (string memory) {
-    //     return _generateBase64SVG(getPixelsFor(tokenId));
-    // }
+    function generateBase64SVG(uint256 tokenId) public view checkTokenExists(tokenId) returns (string memory) {
+        return _generateBase64SVG(_editionData[tokenId].palette, _pixels);
+    }
 
-    // function generateJSON(uint256 tokenId) public view returns (string memory json) {
-    //     // NOTE: We don't check token existence here,
-    //     // so burnt tokens can also outputs this result unlike tokenURI function
+    function generateJSON(uint256 tokenId) public view checkTokenExists(tokenId) returns (string memory json) {
+        json = string(abi.encodePacked(
+            '{"name":"',
+            _symbol, ' #', ColorUtils.uint2str(tokenId),
+            '","description":"',
+            metaData.description,
+            '","image":"',
+            generateBase64SVG(tokenId),
+            '"}'
+        ));
+    }
 
-    //     require(tokenId < _tokenIdTracker.current(), "TOKEN_NOT_MINTED");
+    function tokenURI(uint256 tokenId) public view override checkTokenExists(tokenId) returns (string memory) {
+        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(generateJSON(tokenId)))));
+    }
 
-    //     /* solhint-disable quotes */
-    //     json = string(abi.encodePacked(
-    //         '{"name":"Dixel Collection #',
-    //         ColorUtils.uint2str(tokenId),
-    //         '","description":"Dixel Club (https://dixel.club) is a draw to earn pixel art NFT platform where users can overwrite price-compounded pixels to generate fully on-chain NFTs.',
-    //         '","updated_pixel_count":"',
-    //         ColorUtils.uint2str(history[tokenId].updatedPixelCount),
-    //         '","reserve_for_refund":"',
-    //         ColorUtils.uint2str(history[tokenId].reserveForRefund),
-    //         '","burned":',
-    //         (history[tokenId].burned ? 'true' : 'false'),
-    //         ',"image":"',
-    //         generateBase64SVG(tokenId),
-    //         '"}'
-    //     ));
-    //     /* solhint-enable quotes */
-    // }
+    function burn(uint256 tokenId) external {
+        require(_isApprovedOrOwner(msg.sender, tokenId), "CALLER_IS_NOT_APPROVED"); // This will check existence of token
 
-    // function tokenURI(uint256 tokenId) public view override returns (string memory) {
-    //     require(_exists(tokenId), "TOKEN_NOT_MINTED_OR_BURNED");
-
-    //     return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(generateJSON(tokenId)))));
-    // }
-
-    // function burn(uint256 tokenId) external {
-    //     address msgSender = _msgSender();
-
-    //     // Check if token has already been burned, distinguishing it from revert due to non existing tokenId
-    //     require(history[tokenId].burned != true, "TOKEN_HAS_ALREADY_BURNED");
-
-    //     // This will also check `_exists(tokenId)`
-    //     require(_isApprovedOrOwner(msgSender, tokenId), "CALLER_IS_NOT_APPROVED");
-
-    //     _burn(tokenId);
-
-    //     // Refund reserve amount
-    //     history[tokenId].burned = true;
-    //     require(baseToken.transfer(msgSender, history[tokenId].reserveForRefund), "REFUND_TRANSFER_FAILED");
-
-    //     emit Burn(msgSender, tokenId, history[tokenId].reserveForRefund);
-    // }
+        delete _editionData[tokenId];
+        _burn(tokenId);
+    }
 
     // MARK: - External utility functions
 
@@ -183,7 +158,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         uint256 mintingCost,
         string memory description,
         uint256 totalSupply_,
-        uint8[TOTAL_PIXEL_COUNT] memory pixels_
+        uint8[TOTAL_PIXEL_COUNT] memory pixels
     ) {
         name_ = name();
         symbol_ = symbol();
@@ -194,13 +169,16 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         mintingCost = metaData.mintingCost;
         description = metaData.description;
         totalSupply_ = totalSupply();
-        pixels_ = pixels;
+        pixels = _pixels;
     }
 
-    function paletteOf(uint256 tokenId) external view returns (uint24[PALETTE_SIZE] memory) {
+    function paletteOf(uint256 tokenId) external view checkTokenExists(tokenId) returns (uint24[PALETTE_SIZE] memory) {
         return _editionData[tokenId].palette;
     }
 
+    function getAllPixels() external view returns (uint8[TOTAL_PIXEL_COUNT] memory) {
+        return _pixels;
+    }
 
     // MARK: - Override extensions
 

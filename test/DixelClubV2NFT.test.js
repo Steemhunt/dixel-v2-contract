@@ -94,13 +94,29 @@ contract("DixelClubV2NFT", function(accounts) {
       expect(delta).to.be.bignumber.equal(this.mintingFee);
     });
 
-    it("should generate a new SVG image for the new edition", async function() {
-      await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+    describe("generate SVG and tokenURI", function() {
+      beforeEach(async function() {
+        await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      });
 
-      const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
-      expect(await this.collection.generateSVG(1)).to.equal(svg);
+      it("should generate a new SVG image for the new edition", async function() {
+        const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
+        expect(await this.collection.generateSVG(1)).to.equal(svg);
+      });
+
+      it("should generate a base64 encoded SVG image correctly", async function() {
+        const base64 = fs.readFileSync(`${__dirname}/fixtures/test-svg2.base64`, 'utf8');
+        expect(await this.collection.generateBase64SVG(1)).to.equal(base64);
+      });
+
+      it("should generate a correct JSON output", async function() {
+        const json = fs.readFileSync(`${__dirname}/fixtures/test.json`, 'utf8');
+        expect(await this.collection.generateJSON(1)).to.equal(json);
+      });
     });
 
     // TODO:
   });
+
+  // TODO: burn
 });
