@@ -2,19 +2,17 @@ const hre = require("hardhat");
 const { ether } = require("@openzeppelin/test-helpers");
 const fs = require('fs');
 
-async function main(tester) {
+async function main() {
   const testToken = await hre.ethers.getContractFactory('ERC20PresetMinterPauser');
-  const contract = await testToken.attach('0xE8Aa938614F83Aa71B08e7f0085c71D01C3a3d77');
-  await contract.mint(tester, '10000000000000000000000');
+  const contract = await testToken.attach('0x6D96ECf4E598dd4FeC0c4CBB3862E3bCcf28A144');
+  await contract.mint('0x32A935f79ce498aeFF77Acd2F7f35B3aAbC31a2D', '10000000000000000000000');
 }
 
-const args = process.argv.slice(2);
-
-main(args[0])
+main()
   .then(() => process.exit(0))
   .catch(error => {
     console.error(error);
     process.exit(1);
   });
 
-// HARDHAT_NETWORK=goerli node scripts/add-tokens.js
+// npx hardhat run --network goerli scripts/add-test-tokens.js

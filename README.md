@@ -11,7 +11,10 @@ npx hardhat test
 
 ## Contracts
 
-### Ethereum Testnet
+### Ethereum Testnet (Goerli)
+- Test DIXEL token: 0x6D96ECf4E598dd4FeC0c4CBB3862E3bCcf28A144
+- DixelClubV2Factory: 0x5663A199Fae99639d80282cbb6Ff751c6Cff6F01
+- DixelClubV2NFT: 0x312e3AC6297baf2671eaBaCC015c36dEFf7eE79d
 
 ### Klaytn Testnet
 

@@ -33,7 +33,7 @@ async function main() {
   console.log(`- DixelClubV2NFT: ${nftImplementation}`);
 
   console.log(`
-    npx hardhat verify --network goerli ${token.address}
+    npx hardhat verify --network goerli ${token.address} 'Test Dixel' 'TEST_DIXEL'
     npx hardhat verify --network goerli ${factory.address} '${token.address}'
     npx hardhat verify --network goerli ${nftImplementation}
   `);
@@ -47,7 +47,7 @@ main()
   });
 
 
-// npx hardhat compile && HARDHAT_NETWORK=goerli node scripts/deploy.js
+// npx hardhat compile && npx hardhat run --network goerli scripts/deploy.js
 
 
 
