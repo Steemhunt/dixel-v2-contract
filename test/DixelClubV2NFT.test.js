@@ -5,6 +5,7 @@ const fs = require("fs");
 
 const DixelClubV2Factory = artifacts.require("DixelClubV2Factory");
 const DixelClubV2NFT = artifacts.require("DixelClubV2NFT");
+const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 
 const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.json`, 'utf8'));
 const TEST_DATA = {
@@ -24,7 +25,10 @@ contract("DixelClubV2NFT", function(accounts) {
   const [ deployer, alice, bob ] = accounts;
 
   beforeEach(async function() {
-    this.factory = await DixelClubV2Factory.new();
+    this.baseToken = await ERC20.new("Test Dixel", "TEST_DIXEL");
+    this.factory = await DixelClubV2Factory.new(this.baseToken.address);
+    await this.baseToken.mint(alice, ether("10000"));
+    await this.baseToken.approve(this.factory.address, MAX_UINT256, { from: alice });
   });
 
   describe("edgecases", function() {

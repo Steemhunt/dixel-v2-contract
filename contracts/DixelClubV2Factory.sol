@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./lib/StringUtils.sol";
 import "./Constants.sol";
 import "./Shared.sol";
@@ -14,12 +15,14 @@ import "./DixelClubV2NFT.sol";
 * Create an ERC721 Dixel Club NFTs using proxy pattern to save gas
 */
 contract DixelClubV2Factory is Constants, Ownable {
+    IERC20 public baseToken;
+
     /**
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
      */
     address payable public nftImplementation;
-    address public beneficiary;
+    address public beneficiary = address(0x32A935f79ce498aeFF77Acd2F7f35B3aAbC31a2D);
     uint256 public creationFee = 1e19; // 10 DIXEL
     uint256 public mintingFee = 500; // 5%;
 
@@ -28,7 +31,8 @@ contract DixelClubV2Factory is Constants, Ownable {
 
     event CollectionCreated(address indexed nftAddress, string name, string symbol);
 
-    constructor() {
+    constructor(address baseTokenAddress) {
+        baseToken = IERC20(baseTokenAddress);
         nftImplementation = payable(address(new DixelClubV2NFT()));
     }
 
@@ -60,9 +64,10 @@ contract DixelClubV2Factory is Constants, Ownable {
         require(!StringUtils.contains(symbol, 0x22), 'SYMBOL_CONTAINS_MALICIOUS_CHARACTER');
         require(!StringUtils.contains(metaData.description, 0x22), 'DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER');
 
-        // TODO: Take creation fee by DIXEL tokens
-
-        // TODO: check if palette contains 0 -> if so, it should be on index 0 to save gas
+        // Take creation fee by DIXEL tokens
+        if (creationFee > 0) {
+            require(baseToken.transferFrom(msg.sender, beneficiary, creationFee), "CREATION_FEE_TRANSFER_FAILED");
+        }
 
         address payable nftAddress = _createClone(nftImplementation);
         DixelClubV2NFT newNFT = DixelClubV2NFT(nftAddress);
