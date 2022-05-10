@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v4.5.0) (token/ERC721/ERC721.sol)
+// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC721/ERC721.sol)
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
@@ -12,7 +12,10 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 /**
- * @dev A slightly modified version of ERC721.sol (from Openzeppelin 4.5.0) for initialization pattern
+ * @dev A slightly modified version of ERC721.sol (from Openzeppelin 4.6.0) for initialization pattern
+ *   - remove constructor
+ *   - make `_name`, and `_symbol` internal instead of private
+ *   - rename ERC721 -> ERC721Initializable
  */
 abstract contract ERC721Initializable is Context, ERC165, IERC721, IERC721Metadata {
     using Address for address;
@@ -90,7 +93,7 @@ abstract contract ERC721Initializable is Context, ERC165, IERC721, IERC721Metada
     /**
      * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
      * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
-     * by default, can be overriden in child contracts.
+     * by default, can be overridden in child contracts.
      */
     function _baseURI() internal view virtual returns (string memory) {
         return "";
@@ -222,7 +225,7 @@ abstract contract ERC721Initializable is Context, ERC165, IERC721, IERC721Metada
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
         require(_exists(tokenId), "ERC721: operator query for nonexistent token");
         address owner = ERC721Initializable.ownerOf(tokenId);
-        return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
+        return (spender == owner || isApprovedForAll(owner, spender) || getApproved(tokenId) == spender);
     }
 
     /**

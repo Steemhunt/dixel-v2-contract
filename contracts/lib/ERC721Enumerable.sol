@@ -6,7 +6,8 @@ import "./ERC721Initializable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 /**
- * @dev A slightly modified version of ERC721Enumerable.sol (from Openzeppelin 4.5.0) for initialization pattern
+ * @dev A slightly modified version of ERC721Enumerable.sol (from Openzeppelin 4.6.0) for initialization pattern
+ *   - rename ERC721 -> ERC721Initializable
  */
 abstract contract ERC721Enumerable is ERC721Initializable, IERC721Enumerable {
     // Mapping from owner to list of owned token IDs
