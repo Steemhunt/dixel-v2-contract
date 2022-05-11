@@ -5,6 +5,7 @@ const fs = require("fs");
 
 const DixelClubV2Factory = artifacts.require("DixelClubV2Factory");
 const DixelClubV2NFT = artifacts.require("DixelClubV2NFT");
+const DixelClubV2NFTMock = artifacts.require("DixelClubV2NFTMock");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 
 const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.json`, 'utf8'));
@@ -57,7 +58,37 @@ contract("DixelClubV2Factory", function(accounts) {
     });
   });
 
-  // TODO: updateImplementation
+  // TODO: admin function permissions
+
+  describe("Upgrade NFT implementation", function () {
+    beforeEach(async function() {
+      await _mintTestTokensAndApprove(alice, this.baseToken, this.factory.address);
+
+      await this.factory.createCollection(...this.testParams);
+      this.collection0 = await DixelClubV2NFT.at(await this.factory.collections("0"));
+
+      const v2Implementation = await DixelClubV2NFTMock.new();
+      await this.factory.updateImplementation(v2Implementation.address);
+
+      await this.factory.createCollection(...this.testParams);
+      this.collection1 = await DixelClubV2NFT.at(await this.factory.collections("1"));
+    });
+
+    it("should be version 1 originally", async function () {
+      expect(await this.collection0.version()).to.be.bignumber.equal("1");
+    });
+
+    it("should be version 2 after updateImplementation", async function () {
+      expect(await this.collection1.version()).to.be.bignumber.equal("2");
+    });
+
+    it("should be stayed as version 2 after one more creation", async function () {
+      await this.factory.createCollection(...this.testParams);
+      const collection2 = await DixelClubV2NFT.at(await this.factory.collections("2"));
+
+      expect(await collection2.version()).to.be.bignumber.equal("2");
+    });
+  });
 
   // TODO: updateBeneficiary
 

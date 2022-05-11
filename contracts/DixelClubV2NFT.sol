@@ -198,4 +198,9 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         return (owner(), (_salePrice * metaData.royaltyFriction) / FRICTION_BASE);
     }
+
+    // NFT implementation version
+    function version() external pure virtual returns (uint16) {
+        return 1;
+    }
 }
