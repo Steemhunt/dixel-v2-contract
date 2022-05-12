@@ -28,7 +28,7 @@ async function _mintTestTokensAndApprove(user, token, factory) {
 }
 
 contract("DixelClubV2Factory", function(accounts) {
-  const [ deployer, alice ] = accounts;
+  const [ deployer, alice, bob ] = accounts;
 
   beforeEach(async function() {
     this.baseToken = await ERC20.new("Test Dixel", "TEST_DIXEL");
@@ -58,7 +58,22 @@ contract("DixelClubV2Factory", function(accounts) {
     });
   });
 
-  // TODO: admin function permissions
+  describe("permission restriction on admin functions", function() {
+    it('non-owner should not be able to update implementation', async function () {
+      const v2Implementation = await DixelClubV2NFTMock.new();
+      await expectRevert(
+        this.factory.updateImplementation(v2Implementation.address, { from: alice }),
+        "Ownable: caller is not the owner"
+      );
+    });
+
+    it('non-owner should not be able to update beneficiary', async function () {
+      await expectRevert(
+        this.factory.updateBeneficiary(alice, "0", "0", { from: alice }),
+        "Ownable: caller is not the owner"
+      );
+    });
+  });
 
   describe("Upgrade NFT implementation", function () {
     beforeEach(async function() {
@@ -90,7 +105,38 @@ contract("DixelClubV2Factory", function(accounts) {
     });
   });
 
-  // TODO: updateBeneficiary
+  describe("Update beneficiary information", function() {
+    beforeEach(async function() {
+      await this.factory.updateBeneficiary(bob, ether("20"), "1000");
+    });
+
+    it("should change beneficiary address", async function() {
+      expect(await this.factory.beneficiary()).to.equal(bob);
+    });
+
+    it("should change creation fee to 20 DIXELs", async function() {
+      expect(await this.factory.creationFee()).to.be.bignumber.equal(ether("20"));
+    });
+
+    it("should change minting fee to 10%", async function() {
+      expect(await this.factory.mintingFee()).to.be.bignumber.equal("1000");
+    });
+  });
+
+  describe("Update beneficiary - edge cases", function() {
+    it("should not be able to set beneficiary as zero address", async function() {
+      expectRevert(
+        this.factory.updateBeneficiary(ZERO_ADDRESS, "0", "0"),
+        "BENEFICIARY_CANNOT_BE_NULL"
+      );
+    });
+    it("should not be able to set mintingFee over base friction (10,000)", async function() {
+      expectRevert(
+        this.factory.updateBeneficiary(ZERO_ADDRESS, "0", "10001"),
+        "INVALID_FEE_FRICTION"
+      );
+    });
+  });
 
   describe("create a collection - validation", function() {
     it("should check if name is blank", async function() {
@@ -200,8 +246,6 @@ contract("DixelClubV2Factory", function(accounts) {
     it("should have the alice as the collection owner", async function() {
       expect(await this.collection.owner()).to.equal(alice);
     });
-
-    // TODO: minting fee
 
     describe("should mint #0 edition to the creator", function() {
       it("should mint #0 edition", async function() {
