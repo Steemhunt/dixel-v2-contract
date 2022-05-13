@@ -1,4 +1,4 @@
-const { ether, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { ether, balance, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256, ZERO_ADDRESS } = constants;
 const { expect } = require("chai");
 const fs = require("fs");
@@ -6,7 +6,6 @@ const fs = require("fs");
 const DixelClubV2Factory = artifacts.require("DixelClubV2Factory");
 const DixelClubV2NFT = artifacts.require("DixelClubV2NFT");
 const DixelClubV2NFTMock = artifacts.require("DixelClubV2NFTMock");
-const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 
 const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.json`, 'utf8'));
 const TEST_DATA = {
@@ -22,24 +21,21 @@ const TEST_DATA = {
   }
 };
 
-async function _mintTestTokensAndApprove(user, token, factory) {
-  await token.mint(user, ether("10000"));
-  await token.approve(factory, MAX_UINT256, { from: user });
-}
-
 contract("DixelClubV2Factory", function(accounts) {
   const [ deployer, alice, bob ] = accounts;
 
   beforeEach(async function() {
-    this.baseToken = await ERC20.new("Test Dixel", "TEST_DIXEL");
-    this.factory = await DixelClubV2Factory.new(this.baseToken.address);
+    this.factory = await DixelClubV2Factory.new();
+    this.creationFee = await this.factory.creationFee();
+    this.beneficiary = await this.factory.beneficiary();
+
     this.testParams = [
       TEST_DATA.name,
       TEST_DATA.symbol,
       Object.values(TEST_DATA.metaData),
       TEST_INPUT.palette,
       TEST_INPUT.pixels,
-      { from: alice }
+      { from: alice, value: this.creationFee }
     ];
   });
 
@@ -77,8 +73,6 @@ contract("DixelClubV2Factory", function(accounts) {
 
   describe("Upgrade NFT implementation", function () {
     beforeEach(async function() {
-      await _mintTestTokensAndApprove(alice, this.baseToken, this.factory.address);
-
       await this.factory.createCollection(...this.testParams);
       this.collection0 = await DixelClubV2NFT.at(await this.factory.collections("0"));
 
@@ -171,31 +165,30 @@ contract("DixelClubV2Factory", function(accounts) {
       this.testParams[2][5] = 'what ever ""';
       await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
     });
+
+    // TODO: INVALID_CREATION_FEE_SENT
   });
 
   describe("creation fee", function() {
-    beforeEach(async function() {
-      await _mintTestTokensAndApprove(alice, this.baseToken, this.factory.address);
-      this.initialBalance = await this.baseToken.balanceOf(alice);
-      this.creationFee = await this.factory.creationFee();
-      this.beneficiary = await this.factory.beneficiary();
-
-      await this.factory.createCollection(...this.testParams);
-    });
-
     it("should take cration fee from the creator", async function() {
-      expect(await this.baseToken.balanceOf(alice)).to.be.bignumber.equal(this.initialBalance.sub(this.creationFee));
+      const tracker = await balance.tracker(alice, 'wei');
+      await this.factory.createCollection(...this.testParams);
+      const { delta, fees } = await tracker.deltaWithFees();
+
+      expect(delta.add(fees)).to.be.bignumber.equal(this.creationFee.mul(new BN(-1)));
     });
 
     it("should send cration fee to the beneficiary", async function() {
-      expect(await this.baseToken.balanceOf(this.beneficiary)).to.be.bignumber.equal(this.creationFee);
+      const tracker = await balance.tracker(this.beneficiary, 'wei');
+      await this.factory.createCollection(...this.testParams);
+      const delta = await tracker.delta();
+
+      expect(delta).to.be.bignumber.equal(this.creationFee);
     });
   });
 
   describe("create a collection", function() {
     beforeEach(async function() {
-      await _mintTestTokensAndApprove(alice, this.baseToken, this.factory.address);
-
       this.receipt = await this.factory.createCollection(...this.testParams);
       this.collection = await DixelClubV2NFT.at(this.receipt.logs[1].args.nftAddress);
     });

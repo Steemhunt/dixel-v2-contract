@@ -5,7 +5,6 @@ const fs = require("fs");
 
 const DixelClubV2Factory = artifacts.require("DixelClubV2Factory");
 const DixelClubV2NFT = artifacts.require("DixelClubV2NFT");
-const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 
 const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.json`, 'utf8'));
 const TEST_DATA = {
@@ -25,10 +24,8 @@ contract("DixelClubV2NFT", function(accounts) {
   const [ deployer, alice, bob ] = accounts;
 
   beforeEach(async function() {
-    this.baseToken = await ERC20.new("Test Dixel", "TEST_DIXEL");
-    this.factory = await DixelClubV2Factory.new(this.baseToken.address);
-    await this.baseToken.mint(alice, ether("10000"));
-    await this.baseToken.approve(this.factory.address, MAX_UINT256, { from: alice });
+    this.factory = await DixelClubV2Factory.new();
+    this.creationFee = await this.factory.creationFee();
   });
 
   describe("edgecases", function() {
@@ -39,7 +36,7 @@ contract("DixelClubV2NFT", function(accounts) {
         Object.values(Object.assign({}, TEST_DATA.metaData, { mintingCost: 0 })),
         TEST_INPUT.palette,
         TEST_INPUT.pixels,
-        { from: alice }
+        { from: alice, value: this.creationFee }
       );
       this.collection = await DixelClubV2NFT.at(this.receipt.logs[1].args.nftAddress);
 
@@ -61,7 +58,7 @@ contract("DixelClubV2NFT", function(accounts) {
         Object.values(TEST_DATA.metaData),
         TEST_INPUT.palette,
         TEST_INPUT.pixels,
-        { from: alice }
+        { from: alice, value: this.creationFee }
       );
       this.collection = await DixelClubV2NFT.at(this.receipt.logs[1].args.nftAddress);
       this.mintingCost = TEST_DATA.metaData.mintingCost;

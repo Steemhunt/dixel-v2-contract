@@ -3,7 +3,6 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./lib/StringUtils.sol";
 import "./Constants.sol";
 import "./Shared.sol";
@@ -15,15 +14,14 @@ import "./DixelClubV2NFT.sol";
 * Create an ERC721 Dixel Club NFTs using proxy pattern to save gas
 */
 contract DixelClubV2Factory is Constants, Ownable {
-    IERC20 public baseToken;
-
     /**
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
      */
     address payable public nftImplementation;
+
     address public beneficiary = address(0x32A935f79ce498aeFF77Acd2F7f35B3aAbC31a2D);
-    uint256 public creationFee = 1e19; // 10 DIXEL
+    uint256 public creationFee = 2e16; // 0.02 ETH (~$50)
     uint256 public mintingFee = 500; // 5%;
 
     // Array of all created nft collections
@@ -31,8 +29,7 @@ contract DixelClubV2Factory is Constants, Ownable {
 
     event CollectionCreated(address indexed nftAddress, string name, string symbol);
 
-    constructor(address baseTokenAddress) {
-        baseToken = IERC20(baseTokenAddress);
+    constructor() {
         nftImplementation = payable(address(new DixelClubV2NFT()));
     }
 
@@ -53,7 +50,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         Shared.MetaData memory metaData,
         uint24[PALETTE_SIZE] memory palette,
         uint8[TOTAL_PIXEL_COUNT] memory pixels
-    ) external returns (address payable) {
+    ) external payable returns (address payable) {
         require(bytes(name).length > 0, "NAME_CANNOT_BE_BLANK");
         require(bytes(symbol).length > 0, "SYMBOL_CANNOT_BE_BLANK");
         require(bytes(metaData.description).length <= 1000, "DESCRIPTION_TOO_LONG"); // ~900 gas per character
@@ -64,9 +61,12 @@ contract DixelClubV2Factory is Constants, Ownable {
         require(!StringUtils.contains(symbol, 0x22), 'SYMBOL_CONTAINS_MALICIOUS_CHARACTER');
         require(!StringUtils.contains(metaData.description, 0x22), 'DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER');
 
-        // Take creation fee by DIXEL tokens
         if (creationFee > 0) {
-            require(baseToken.transferFrom(msg.sender, beneficiary, creationFee), "CREATION_FEE_TRANSFER_FAILED");
+            require(msg.value == creationFee, "INVALID_CREATION_FEE_SENT");
+
+            // Send fee to the beneficiary
+            (bool sent, ) = beneficiary.call{ value: creationFee }("");
+            require(sent, "CREATION_FEE_TRANSFER_FAILED");
         }
 
         address payable nftAddress = _createClone(nftImplementation);
