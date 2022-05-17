@@ -138,31 +138,34 @@ contract("DixelClubV2NFT", function(accounts) {
       expect(info[1]).to.be.bignumber.equal("5"); // 5%
     });
 
-    describe("generate SVG and tokenURI", function() {
+    describe("generate SVG and base64 encoded image", function() {
       beforeEach(async function() {
         await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+        this.svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
+        this.base64Image = `data:image/svg+xml;base64,${Buffer.from(this.svg).toString('base64')}`;
       });
 
       it("new SVG image for the new edition", async function() {
-        const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
-        expect(await this.collection.generateSVG(1)).to.equal(svg);
+        expect(await this.collection.generateSVG(1)).to.equal(this.svg);
       });
 
       it("base64 encoded SVG image correctly", async function() {
-        const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
-        const base64 = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
-        expect(await this.collection.generateBase64SVG(1)).to.equal(base64);
+        expect(await this.collection.generateBase64SVG(1)).to.equal(this.base64Image);
       });
 
-      it("tokenJSON", async function() {
-        const json = fs.readFileSync(`${__dirname}/fixtures/test.json`, 'utf8');
-        expect(await this.collection.tokenJSON(1)).to.equal(json);
-      });
+      describe("generate tokenJSON and URI", function() {
+        beforeEach(async function() {
+          this.json = `{"name":"${TEST_DATA.symbol} #1","description":"${TEST_DATA.metaData.description}",` +
+            `"external_url":"https://dixel.club/collection/${this.collection.address.toLowerCase()}/1","image":"${this.base64Image}"}`;
+        });
 
-      it("tokenURI", async function() {
-        const json = fs.readFileSync(`${__dirname}/fixtures/test.json`, 'utf8');
-        const base64 = `data:application/json;base64,${Buffer.from(json).toString('base64')}`;
-        expect(await this.collection.tokenURI(1)).to.equal(base64);
+        it("tokenJSON", async function() {
+          expect(await this.collection.tokenJSON(1)).to.equal(this.json);
+        });
+
+        it("tokenURI", async function() {
+          expect(await this.collection.tokenURI(1)).to.equal(`data:application/json;base64,${Buffer.from(this.json).toString('base64')}`);
+        });
       });
     });
 

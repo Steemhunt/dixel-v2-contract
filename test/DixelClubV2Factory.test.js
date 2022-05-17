@@ -231,6 +231,9 @@ contract("DixelClubV2Factory", function(accounts) {
       it("description", async function() {
         expect(this.metaData.description_).to.equal(TEST_DATA.metaData.description);
       });
+      it("owner", async function() {
+        expect(this.metaData.owner_).to.equal(alice);
+      });
       it("pixels", async function() {
         for(const i in TEST_INPUT.pixels) {
           expect(this.metaData.pixels_[i]).to.be.bignumber.equal(String(TEST_INPUT.pixels[i]));

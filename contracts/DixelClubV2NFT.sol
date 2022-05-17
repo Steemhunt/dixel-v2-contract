@@ -207,6 +207,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
             _symbol, ' #', ColorUtils.uint2str(tokenId),
             '","description":"',
             _metaData.description,
+            '","external_url":"https://dixel.club/collection/',
+            StringUtils.address2str(address(this)), '/', ColorUtils.uint2str(tokenId),
             '","image":"',
             generateBase64SVG(tokenId),
             '"}'
@@ -250,6 +252,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         uint256 mintingCost_,
         string memory description_,
         uint256 totalSupply_,
+        address owner_,
         uint8[TOTAL_PIXEL_COUNT] memory pixels_
     ) {
         initializedAt_ = initializedAt;
@@ -262,6 +265,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         mintingCost_ = _metaData.mintingCost;
         description_ = _metaData.description;
         totalSupply_ = totalSupply();
+        owner_ = owner();
         pixels_ = _pixels;
     }
 
