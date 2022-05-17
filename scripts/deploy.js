@@ -20,9 +20,11 @@ async function main() {
   const nftImplementation = await factory.nftImplementation();
   console.log(`    -> NFT implementation contract: ${nftImplementation}`);
 
-  console.log('---');
+  console.log(`Network: ${hre.network.name}`);
+  console.log('```');
   console.log(`- DixelClubV2Factory: ${factory.address}`);
   console.log(`- DixelClubV2NFT: ${nftImplementation}`);
+  console.log('```');
 
   console.log(`
     npx hardhat verify --network ${hre.network.name} ${factory.address}
@@ -38,5 +40,11 @@ main()
   });
 
 
-// npx hardhat compile && npx hardhat run --network goerli scripts/deploy.js
+/* Deploy script
+
+npx hardhat compile && npx hardhat run --network goerli scripts/deploy.js &&
+npx hardhat compile && npx hardhat run --network bsctest scripts/deploy.js &&
+npx hardhat compile && npx hardhat run --network klaytntest scripts/deploy.js
+
+*/
 

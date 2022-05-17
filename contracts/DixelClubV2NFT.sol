@@ -253,7 +253,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         string memory description_,
         uint256 totalSupply_,
         address owner_,
-        uint8[TOTAL_PIXEL_COUNT] memory pixels_
+        uint8[TOTAL_PIXEL_COUNT] memory pixels_,
+        uint24[PALETTE_SIZE] memory defaultPalette_
     ) {
         initializedAt_ = initializedAt;
         name_ = name();
@@ -267,6 +268,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         totalSupply_ = totalSupply();
         owner_ = owner();
         pixels_ = _pixels;
+        defaultPalette_ = _editionData[0].palette;
     }
 
     function paletteOf(uint256 tokenId) external view checkTokenExists(tokenId) returns (uint24[PALETTE_SIZE] memory) {

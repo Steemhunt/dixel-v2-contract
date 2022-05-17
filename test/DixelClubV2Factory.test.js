@@ -239,6 +239,11 @@ contract("DixelClubV2Factory", function(accounts) {
           expect(this.metaData.pixels_[i]).to.be.bignumber.equal(String(TEST_INPUT.pixels[i]));
         }
       });
+      it("default palette", async function() {
+        for(const i in TEST_INPUT.palette) {
+          expect(this.metaData.defaultPalette_[i]).to.be.bignumber.equal(String(TEST_INPUT.palette[i]));
+        }
+      });
     });
 
     it('should emit CollectionCreated event', async function() {
