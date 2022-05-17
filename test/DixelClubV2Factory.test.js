@@ -1,4 +1,4 @@
-const { ether, balance, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { ether, balance, time, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256, ZERO_ADDRESS } = constants;
 const { expect } = require("chai");
 const fs = require("fs");
@@ -119,14 +119,14 @@ contract("DixelClubV2Factory", function(accounts) {
 
   describe("Update beneficiary - edge cases", function() {
     it("should not be able to set beneficiary as zero address", async function() {
-      expectRevert(
+      await expectRevert(
         this.factory.updateBeneficiary(ZERO_ADDRESS, "0", "0"),
         "BENEFICIARY_CANNOT_BE_NULL"
       );
     });
     it("should not be able to set mintingFee over base friction (10,000)", async function() {
-      expectRevert(
-        this.factory.updateBeneficiary(ZERO_ADDRESS, "0", "10001"),
+      await expectRevert(
+        this.factory.updateBeneficiary(bob, "0", "10001"),
         "INVALID_FEE_FRICTION"
       );
     });
@@ -191,6 +191,9 @@ contract("DixelClubV2Factory", function(accounts) {
     beforeEach(async function() {
       this.receipt = await this.factory.createCollection(...this.testParams);
       this.collection = await DixelClubV2NFT.at(this.receipt.logs[1].args.nftAddress);
+
+      const metaData = await this.collection.metaData();
+
     });
 
     it("should have correct ERC721 attributes", async function() {
@@ -198,30 +201,41 @@ contract("DixelClubV2Factory", function(accounts) {
       expect(await this.collection.symbol()).to.equal(TEST_DATA.symbol);
     });
 
-    it("should have correct collection meta data", async function() {
-      const [
-        , // name
-        , // symbol
-        whitelistOnly,
-        maxSupply,
-        royaltyFriction,
-        mintingBeginsFrom,
-        mintingCost,
-        description,
-        , // totalSupply
-        pixels
-      ] = Object.values(await this.collection.collectionMetaData());
+    describe("should have correct collection meta data", function() {
+      beforeEach(async function() {
+        this.metaData = await this.collection.metaData();
+      });
 
-      expect(whitelistOnly).to.equal(TEST_DATA.metaData.whitelistOnly);
-      expect(maxSupply).to.be.bignumber.equal(String(TEST_DATA.metaData.maxSupply));
-      expect(royaltyFriction).to.be.bignumber.equal(String(TEST_DATA.metaData.royaltyFriction));
-      expect(mintingBeginsFrom).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingBeginsFrom));
-      expect(mintingCost).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingCost));
-      expect(description).to.equal(TEST_DATA.metaData.description);
+      it("initializedAt", async function() {
+        // Fuzzy checking on `initializedAt` timestamp
+        const now = await time.latest();
+        expect(this.metaData.initializedAt_).to.be.bignumber.lte(now);
+        expect(this.metaData.initializedAt_).to.be.bignumber.gt(now.sub(new BN("20")));
+      });
 
-      for(const i in TEST_INPUT.pixels) {
-        expect(pixels[i]).to.be.bignumber.equal(String(TEST_INPUT.pixels[i]));
-      }
+      it("whitelistOnly", async function() {
+        expect(this.metaData.whitelistOnly_).to.equal(TEST_DATA.metaData.whitelistOnly);
+      });
+      it("maxSupply", async function() {
+        expect(this.metaData.maxSupply_).to.be.bignumber.equal(String(TEST_DATA.metaData.maxSupply));
+      });
+      it("royaltyFriction", async function() {
+        expect(this.metaData.royaltyFriction_).to.be.bignumber.equal(String(TEST_DATA.metaData.royaltyFriction));
+      });
+      it("mintingBeginsFrom", async function() {
+        expect(this.metaData.mintingBeginsFrom_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingBeginsFrom));
+      });
+      it("mintingCost", async function() {
+        expect(this.metaData.mintingCost_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingCost));
+      });
+      it("description", async function() {
+        expect(this.metaData.description_).to.equal(TEST_DATA.metaData.description);
+      });
+      it("pixels", async function() {
+        for(const i in TEST_INPUT.pixels) {
+          expect(this.metaData.pixels_[i]).to.be.bignumber.equal(String(TEST_INPUT.pixels[i]));
+        }
+      });
     });
 
     it('should emit CollectionCreated event', async function() {
