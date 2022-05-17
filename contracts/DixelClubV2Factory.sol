@@ -57,7 +57,8 @@ contract DixelClubV2Factory is Constants, Ownable {
         require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, "INVALID_MAX_SUPPLY");
         require(metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, "INVALID_ROYALTY_FRICTION");
 
-        // Validate `symbol` and `description` to ensure generateJSON() creates a valid JSON
+        // Validate `symbol`, `name` and `description` to ensure generateJSON() creates a valid JSON
+        require(!StringUtils.contains(name, 0x22), 'SYMBOL_CONTAINS_MALICIOUS_CHARACTER');
         require(!StringUtils.contains(symbol, 0x22), 'SYMBOL_CONTAINS_MALICIOUS_CHARACTER');
         require(!StringUtils.contains(metaData.description, 0x22), 'DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER');
 

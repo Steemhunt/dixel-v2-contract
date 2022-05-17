@@ -64,14 +64,14 @@ module.exports = {
     klaytntest: {
       url: `https://kaikas.baobab.klaytn.net:8651/`,
       chainId: 1001,
-      gasPrice: 750000000000, // 750 ston
+      gasPrice: 250000000000, // 250 ston
       blockGasLimit: 60000000, // 60M
       accounts: [process.env.KLAYTN_TEST_PRIVATE_KEY]
     },
     klaytnmain: {
       url: `https://public-node-api.klaytnapi.com/v1/cypress`,
       chainId: 8217,
-      gasPrice: 750000000000, // 750 ston
+      gasPrice: 250000000000, // 250 ston
       blockGasLimit: 60000000, // 60M
       accounts: [process.env.KLAYTN_PRIVATE_KEY]
     }
@@ -82,7 +82,7 @@ module.exports = {
     coinmarketcap: process.env.COIN_MARKET_CAP_API
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY // process.env.BSCSCAN_API_KEY
+    apiKey: process.env.BSCSCAN_API_KEY // process.env.ETHERSCAN_API_KEY // process.env.BSCSCAN_API_KEY
   },
   mocha: {
     timeout: 120000 // 2 minutes for test timeout

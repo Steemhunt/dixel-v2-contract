@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "base64-sol/base64.sol";
 import "./lib/ERC721Enumerable.sol";
 import "./lib/ColorUtils.sol";
+import "./lib/StringUtils.sol";
 import "./DixelClubV2Factory.sol";
 import "./Shared.sol";
 import "./SVGGenerator.sol"; // inheriting Constants
@@ -132,9 +133,14 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
 
     function tokenURI(uint256 tokenId) public view override checkTokenExists(tokenId) returns (string memory) {
-        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(generateJSON(tokenId)))));
+        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(tokenJSON(tokenId)))));
     }
 
+    // Contract-level metadata for Opeansea
+    // REF: https://docs.opensea.io/docs/contract-level-metadata
+    function contractURI() public view returns (string memory) {
+        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(contractJSON()))));
+    }
 
     // MARK: - Whitelist related functions
 
@@ -195,14 +201,32 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         return _generateBase64SVG(_editionData[tokenId].palette, _pixels);
     }
 
-    function generateJSON(uint256 tokenId) public view checkTokenExists(tokenId) returns (string memory json) {
-        json = string(abi.encodePacked(
+    function tokenJSON(uint256 tokenId) public view checkTokenExists(tokenId) returns (string memory) {
+        return string(abi.encodePacked(
             '{"name":"',
             _symbol, ' #', ColorUtils.uint2str(tokenId),
             '","description":"',
             _metaData.description,
             '","image":"',
             generateBase64SVG(tokenId),
+            '"}'
+        ));
+    }
+
+    function contractJSON() public view returns (string memory) {
+        return string(abi.encodePacked(
+            '{"name":"',
+            _name,
+            '","description":"',
+            _metaData.description,
+            '","image":"',
+            generateBase64SVG(0),
+            '","external_link":"https://dixel.club/collection/',
+            StringUtils.address2str(address(this)),
+            '","seller_fee_basis_points":"',
+            ColorUtils.uint2str(_metaData.royaltyFriction),
+            '","fee_recipient":"',
+            StringUtils.address2str(owner()),
             '"}'
         ));
     }

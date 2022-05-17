@@ -131,28 +131,58 @@ contract("DixelClubV2NFT", function(accounts) {
       expect(delta).to.be.bignumber.equal(this.mintingFee);
     });
 
+    it("should have correct royalty info", async function() {
+      const info = await this.collection.royaltyInfo("0", "100");
+
+      expect(info[0]).to.equal(alice); // collection creator
+      expect(info[1]).to.be.bignumber.equal("5"); // 5%
+    });
+
     describe("generate SVG and tokenURI", function() {
       beforeEach(async function() {
         await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
       });
 
-      it("should generate a new SVG image for the new edition", async function() {
+      it("new SVG image for the new edition", async function() {
         const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
         expect(await this.collection.generateSVG(1)).to.equal(svg);
       });
 
-      it("should generate a base64 encoded SVG image correctly", async function() {
-        const base64 = fs.readFileSync(`${__dirname}/fixtures/test-svg2.base64`, 'utf8');
+      it("base64 encoded SVG image correctly", async function() {
+        const svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
+        const base64 = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
         expect(await this.collection.generateBase64SVG(1)).to.equal(base64);
       });
 
-      it("should generate a correct JSON output", async function() {
+      it("tokenJSON", async function() {
         const json = fs.readFileSync(`${__dirname}/fixtures/test.json`, 'utf8');
-        expect(await this.collection.generateJSON(1)).to.equal(json);
+        expect(await this.collection.tokenJSON(1)).to.equal(json);
+      });
+
+      it("tokenURI", async function() {
+        const json = fs.readFileSync(`${__dirname}/fixtures/test.json`, 'utf8');
+        const base64 = `data:application/json;base64,${Buffer.from(json).toString('base64')}`;
+        expect(await this.collection.tokenURI(1)).to.equal(base64);
       });
     });
 
-    // TODO:
+    describe("generate contract level metadata", function() {
+      beforeEach(async function() {
+        const token0SVG = `data:image/svg+xml;base64,${Buffer.from(fs.readFileSync(`${__dirname}/fixtures/test-svg.svg`, 'utf8')).toString('base64')}`;
+        this.json = `{"name":"${TEST_DATA.name}","description":"${TEST_DATA.metaData.description}",` +
+          `"image":"${token0SVG}","external_link":"https://dixel.club/collection/${this.collection.address.toLowerCase()}",` +
+          `"seller_fee_basis_points":"${TEST_DATA.metaData.royaltyFriction}","fee_recipient":"${alice.toLowerCase()}"}`;
+      });
+
+      it('contractJSON', async function() {
+        expect(await this.collection.contractJSON()).to.equal(this.json);
+      });
+
+      it('contractURI', async function() {
+        const base64 = `data:application/json;base64,${Buffer.from(this.json).toString('base64')}`;
+        expect(await this.collection.contractURI()).to.equal(base64);
+      });
+    });
   });
 
   // TODO: burn
