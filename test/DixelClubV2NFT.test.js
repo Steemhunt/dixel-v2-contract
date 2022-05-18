@@ -205,6 +205,15 @@ contract("DixelClubV2NFT", function(accounts) {
       );
     });
 
+    it("setWhitelist cannot be called on public collection", async function() {
+      const collection2 = await createCollection(this.factory, alice);
+
+      await expectRevert(
+        collection2.setWhitelist([[ bob, "1" ]], { from: alice }),
+        "COLLECTION_IS_PUBLIC"
+      );
+    });
+
     it("should not allow except whitelisted wallet to mint", async function() {
       await expectRevert(
         this.collection.mint(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),

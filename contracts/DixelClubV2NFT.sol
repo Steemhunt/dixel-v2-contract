@@ -147,6 +147,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     // @notice Set a list of whitelist [[address, count]..]
     // Maximum length of list array can be limited by block gas limit of blockchain
     function setWhitelist(WhitelistParams[] memory list) external onlyOwner {
+        require(_metaData.whitelistOnly, "COLLECTION_IS_PUBLIC");
+
         for (uint256 i = 0; i < list.length; i++) {
             _whitelist.set(list[i].wallet, list[i].allowance);
         }
