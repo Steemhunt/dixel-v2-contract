@@ -1,8 +1,17 @@
 # Dixel Club V2
 
 Pixel Art NFT factory that users can:
-1. Create a new NFT collection with a 24x24 pixel art canvas
-2. Mint a new edition on an existing collection with color variations (traits)
+1. Creators: Create a new NFT collection with a 24x24 pixel art canvas with following parameters
+    - name
+    - symbol
+    - description
+    - max minting supply (1 - 1,000,000)
+    - minting cost - in native currency (ETH, BNB, KLAY) (95% goes to creator / 5% platform fee)
+    - royalty (receiving address, percentage: 0 - 10%)
+    - minting initiation time (unix timestamp)
+    - whitelistOnly (boolean)
+      - whitelist can be added by the creator later (wallet address, minting allowance)
+2. Collectors: Mint a new edition on an existing collection with color variations
 
 ## Run Tests
 ```bash
