@@ -144,7 +144,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     // MARK: - Whitelist related functions
 
-    // FIXME: it cost ~ 50K gas for adding 1 whitelist address
+    // FIXME: it cost ~ 58K gas for adding 1 whitelist address
+    // Without interation feature, we can use a simple mapping (address => uint), but that still cost ~13K
 
     // @notice Set a list of whitelist [[address, count]..]
     // Maximum length of list array can be limited by block gas limit of blockchain
