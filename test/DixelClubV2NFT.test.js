@@ -177,18 +177,74 @@ contract("DixelClubV2NFT", function(accounts) {
           `"seller_fee_basis_points":"${TEST_DATA.metaData.royaltyFriction}","fee_recipient":"${alice.toLowerCase()}"}`;
       });
 
-      it('contractJSON', async function() {
+      it("contractJSON", async function() {
         expect(await this.collection.contractJSON()).to.equal(this.json);
       });
 
-      it('contractURI', async function() {
+      it("contractURI", async function() {
         const base64 = `data:application/json;base64,${Buffer.from(this.json).toString('base64')}`;
         expect(await this.collection.contractURI()).to.equal(base64);
       });
     });
   });
 
-  // TODO: burn
+  describe("burn", function() {
+    beforeEach(async function() {
+      this.collection = await createCollection(this.factory, alice);
+      await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // mint #1
+    });
+
+    it("initial states", async function() {
+      expect(await this.collection.exists("1")).to.equal(true);
+      expect(await this.collection.totalSupply()).to.be.bignumber.equal("2");
+    });
+
+    describe("owner can burn their NFT", function() {
+      beforeEach(async function() {
+        await this.collection.burn("1", { from: bob });
+      });
+
+      it("should delete the token", async function() {
+        expect(await this.collection.exists("1")).to.equal(false);
+      });
+
+      it("should decrease the totalSupply", async function() {
+        expect(await this.collection.totalSupply()).to.be.bignumber.equal("1");
+      });
+
+      it("should leave the nextTokenId() with the empty edition number", async function() {
+        expect(await this.collection.nextTokenId()).to.be.bignumber.equal("2");
+      });
+    });
+
+    describe("edge cases", function() {
+      it("should prevent non-owner to burn token", async function() {
+        await expectRevert(
+          this.collection.burn("1", { from: carol }),
+          "CALLER_IS_NOT_APPROVED"
+        );
+      });
+
+      it("should allow non-owner to burn token once approved", async function() {
+        await this.collection.approve(carol, "1", { from: bob });
+        await this.collection.burn("1", { from: carol });
+        expect(await this.collection.exists("1")).to.equal(false);
+      });
+
+      it("should allow non-owner to burn token once setApprovalForAll", async function() {
+        await this.collection.setApprovalForAll(carol, true, { from: bob });
+        await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // mint #2
+        expect(await this.collection.totalSupply()).to.be.bignumber.equal("3");
+
+        await this.collection.burn("1", { from: carol });
+        await this.collection.burn("2", { from: carol });
+
+        expect(await this.collection.exists("1")).to.equal(false);
+        expect(await this.collection.exists("2")).to.equal(false);
+        expect(await this.collection.totalSupply()).to.be.bignumber.equal("1");
+      });
+    });
+  });
 
   describe("whitelist", function() {
     beforeEach(async function() {
