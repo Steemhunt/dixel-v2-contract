@@ -3,7 +3,6 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -24,7 +23,6 @@ import "./SVGGenerator.sol"; // inheriting Constants
  */
 contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     using Counters for Counters.Counter;
-    using EnumerableMap for EnumerableMap.AddressToUintMap;
 
     Counters.Counter private _tokenIdTracker;
     DixelClubV2Factory private _factory;
@@ -39,11 +37,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
     EditionData[] private _editionData; // Color (palette) data for each edition
 
-    struct WhitelistParams {
-        address wallet;
-        uint256 allowance;
-    }
-    EnumerableMap.AddressToUintMap private _whitelist;
+    address[] private _whitelist;
 
     event Mint(address indexed to, uint256 indexed tokenId);
 
@@ -91,10 +85,9 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         // For whitelist only collections
         if (_metaData.whitelistOnly) {
-            (, uint256 allowance) = _whitelist.tryGet(msg.sender);
-            require(allowance > 0, "NOT_IN_WTHIELIST");
+            require(isWhitelistWallet(msg.sender), "NOT_IN_WTHIELIST");
 
-            _whitelist.set(msg.sender, allowance - 1); // decrease allowance by 1
+            _removeWhitelist(msg.sender); // decrease allowance by 1
         }
 
         if (mintingCost > 0) {
@@ -144,55 +137,77 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     // MARK: - Whitelist related functions
 
-    // FIXME: it cost ~ 58K gas for adding 1 whitelist address
-    // Without interation feature, we can use a simple mapping (address => uint), but that still cost ~13K
-
-    // @notice Set a list of whitelist [[address, count]..]
-    // Maximum length of list array can be limited by block gas limit of blockchain
-    function setWhitelist(WhitelistParams[] memory list) external onlyOwner {
+    // @dev Maximum length of list array can be limited by block gas limit of blockchain
+    // @notice Duplicated address input means multiple allowance
+    function addWhitelist(address[] memory list) external onlyOwner {
         require(_metaData.whitelistOnly, "COLLECTION_IS_PUBLIC");
 
-        for (uint256 i = 0; i < list.length; i++) {
-            _whitelist.set(list[i].wallet, list[i].allowance);
-        }
-    }
-
-    function getWhitelistWalletCount() external view returns (uint256) {
-        return _whitelist.length();
-    }
-
-    function getWhitelistTotalAllowanceLeft() external view returns (uint256 total) {
-        uint256 length = _whitelist.length();
-
+        uint256 length = list.length; // gas saving
         for (uint256 i = 0; i < length; i++) {
-            (, uint256 allowance) = _whitelist.at(i);
-            total += allowance;
+            _whitelist.push(list[i]);
         }
     }
 
-    function getAllWhitelist(uint256 offset, uint256 limit) external view returns (WhitelistParams[] memory list) {
-        uint256 length = _whitelist.length();
+    function _removeWhitelist(address wallet) private {
+        for (uint256 i = 0; i < _whitelist.length; i++) {
+            if (_whitelist[i] == wallet) {
+                _whitelist[i] = _whitelist[_whitelist.length - 1]; // put the last element into the delete index
+                _whitelist.pop(); // delete the last element to decrease array length;
+            }
+        }
+    }
+
+    // @dev Maximum length of list array can be limited by block gas limit of blockchain
+    function removeWhitelist(address[] memory list) external onlyOwner {
+        require(_metaData.whitelistOnly, "COLLECTION_IS_PUBLIC");
+
+        uint256 length = list.length; // gas saving
+        for (uint256 i = 0; i < length; i++) {
+            _removeWhitelist(list[i]);
+        }
+    }
+
+    // @dev offset & limit for pagination
+    function getAllWhitelist(uint256 offset, uint256 limit) external view returns (address[] memory list) {
+        uint256 length = _whitelist.length;
         uint256 count = limit;
 
         if (offset >= length) {
-            return list;
+            return list; // empty list
         } else if (offset + limit > length) {
             count = length - offset;
         }
 
-        list = new WhitelistParams[](count);
+        list = new address[](count);
         for (uint256 i = 0; i < count; i++) {
-            (address wallet, uint256 allowance) = _whitelist.at(offset + i);
-
-            list[i].wallet = wallet;
-            list[i].allowance = allowance;
+            list[i] = _whitelist[offset + i];
         }
     }
 
-    function getWhitelistAllowanceLeft(address wallet) external view returns (uint256) {
-        (, uint256 allowance) = _whitelist.tryGet(wallet);
+    function getWhitelistCount() external view returns (uint256) {
+        return _whitelist.length;
+    }
+
+    function getWhitelistAllowanceLeft(address wallet) external view returns (uint256 allowance) {
+        uint256 length = _whitelist.length; // gas saving
+        for (uint256 i = 0; i < length; i++) {
+            if (_whitelist[i] == wallet) {
+                allowance++;
+            }
+        }
 
         return allowance;
+    }
+
+    function isWhitelistWallet(address wallet) public view returns (bool) {
+        uint256 length = _whitelist.length; // gas saving
+        for (uint256 i = 0; i < length; i++) {
+            if (_whitelist[i] == wallet) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

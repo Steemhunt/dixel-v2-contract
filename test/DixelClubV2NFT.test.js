@@ -40,7 +40,7 @@ contract("DixelClubV2NFT", function(accounts) {
     this.mintingCost = TEST_DATA.metaData.mintingCost;
   });
 
-  describe("edgecases", function() {
+  describe("edge cases", function() {
     it("can mint a new edition for free if minting cost is 0", async function() {
       const collection = await createCollection(this.factory, alice, { mintingCost: 0 });
 
@@ -249,59 +249,124 @@ contract("DixelClubV2NFT", function(accounts) {
   describe("whitelist", function() {
     beforeEach(async function() {
       this.collection = await createCollection(this.factory, alice, { whitelistOnly: true });
-
-      await this.collection.setWhitelist([[ alice, "1" ], [ bob, "1" ]], { from: alice });
-      await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      await this.collection.addWhitelist([alice, bob], { from: alice });
     });
 
-    it("setWhitelist can be only called by the owner of the collection", async function() {
-      await expectRevert(
-        this.collection.setWhitelist([[ bob, "1" ]], { from: bob }),
-        "Ownable: caller is not the owner"
-      );
-    });
+    describe("initial states", function() {
+      it("should have 2 whitelist count", async function() {
+        expect(await this.collection.getWhitelistCount()).to.be.bignumber.equal("2");
+      });
 
-    it("setWhitelist cannot be called on public collection", async function() {
-      const collection2 = await createCollection(this.factory, alice);
+      it("should have alice in whitelist", async function() {
+        expect(await this.collection.isWhitelistWallet(alice)).to.equal(true);
+        expect(await this.collection.getWhitelistAllowanceLeft(alice)).to.be.bignumber.equal("1");
+      });
 
-      await expectRevert(
-        collection2.setWhitelist([[ bob, "1" ]], { from: alice }),
-        "COLLECTION_IS_PUBLIC"
-      );
-    });
+      it("should have bob in whitelist", async function() {
+        expect(await this.collection.isWhitelistWallet(bob)).to.equal(true);
+        expect(await this.collection.getWhitelistAllowanceLeft(bob)).to.be.bignumber.equal("1");
+      });
 
-    it("should not allow except whitelisted wallet to mint", async function() {
-      await expectRevert(
-        this.collection.mint(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),
-        "NOT_IN_WTHIELIST"
-      );
-    });
+      it("should return all whitelist correctly", async function() {
+        const list = await this.collection.getAllWhitelist("0", "2");
+        expect(list[0]).to.equal(alice);
+        expect(list[1]).to.equal(bob);
+      });
+    }); // initial states
 
-    it("cannot mint more than allowance", async function() {
-      await expectRevert(
-        this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }),
-        "NOT_IN_WTHIELIST"
-      );
-    });
 
-    it("should decrease the allowance after minting", async function() {
-      expect(await this.collection.getWhitelistAllowanceLeft(bob)).to.be.bignumber.equal("0");
-    });
+    describe("pagination", async function() {
+      beforeEach(async function() {
+        await this.collection.addWhitelist([carol, alice, bob, carol, carol, alice, bob, bob], { from: alice });
+        // total 10: a, b, c, a, b, c, c, a, b, b
+      });
 
-    it("should return a correct unique whitelist wallet count", async function() {
-      expect(await this.collection.getWhitelistWalletCount()).to.be.bignumber.equal("2");
-    });
+      it("should paginate correctly with offset and limit", async function() {
+        const list = await this.collection.getAllWhitelist("2", "3");
+        expect(list.length).to.equal(3);
+        expect(list[0]).to.equal(carol);
+        expect(list[1]).to.equal(alice);
+        expect(list[2]).to.equal(bob);
+      });
 
-    it("should return a correct allowance left after 1 minting", async function() {
-      expect(await this.collection.getWhitelistTotalAllowanceLeft()).to.be.bignumber.equal("1");
-    });
+      it("should return empty array if offset >= length", async function() {
+        const list = await this.collection.getAllWhitelist("10", "3");
+        expect(list.length).to.equal(0);
+      });
 
-    it("should return all whitelist correctly", async function() {
-      const list = await this.collection.getAllWhitelist("0", "100");
-      expect(list[0].wallet).to.equal(alice);
-      expect(list[0].allowance).to.be.bignumber.equal("1");
-      expect(list[1].wallet).to.equal(bob);
-      expect(list[1].allowance).to.be.bignumber.equal("0");
-    });
+      it("should output all results up to the end of the array if offset + limit > whitelist length", async function() {
+        const list = await this.collection.getAllWhitelist("8", "5");
+        expect(list.length).to.equal(2);
+        expect(list[0]).to.equal(bob);
+        expect(list[1]).to.equal(bob);
+      });
+    }); // pagination
+
+    describe("creator functions", function() {
+      it("addWhitelist can be only called by the owner of the collection", async function() {
+        await expectRevert(
+          this.collection.addWhitelist([bob], { from: bob }),
+          "Ownable: caller is not the owner"
+        );
+      });
+
+      it("addWhitelist cannot be called on public collection", async function() {
+        const collection2 = await createCollection(this.factory, alice);
+
+        await expectRevert(
+          collection2.addWhitelist([bob], { from: alice }),
+          "COLLECTION_IS_PUBLIC"
+        );
+      });
+
+      // TODO: removeWhitelist
+    }); // creator functions
+
+    describe("after minting", async function() {
+      beforeEach(async function() {
+        await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      });
+
+      it("cannot mint more than allowance", async function() {
+        await expectRevert(
+          this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }),
+          "NOT_IN_WTHIELIST"
+        );
+      });
+
+      it("should decrease the allowance after minting", async function() {
+        expect(await this.collection.getWhitelistAllowanceLeft(bob)).to.be.bignumber.equal("0");
+      });
+
+      it("should return a correct whitelist left after 1 minting", async function() {
+        expect(await this.collection.getWhitelistCount()).to.be.bignumber.equal("1");
+      });
+    }); // after minting
+
+    describe("edge cases", async function() {
+      it("should not allow except whitelisted wallet to mint", async function() {
+        await expectRevert(
+          this.collection.mint(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),
+          "NOT_IN_WTHIELIST"
+        );
+      });
+
+      it("should return duplicated results", async function() {
+        await this.collection.addWhitelist([bob], { from: alice });
+
+        const list = await this.collection.getAllWhitelist("0", "3");
+        expect(list[0]).to.equal(alice);
+        expect(list[1]).to.equal(bob);
+        expect(list[2]).to.equal(bob);
+      });
+
+      it("should return a crrect allowance once duplicated", async function() {
+        await this.collection.addWhitelist([alice, carol, alice], { from: alice });
+        expect(await this.collection.getWhitelistAllowanceLeft(alice)).to.be.bignumber.equal("3");
+      });
+
+      // TODO:
+
+    }); // edge cases
   }); // whitelist
 });
