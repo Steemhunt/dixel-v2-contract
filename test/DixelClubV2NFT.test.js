@@ -302,7 +302,7 @@ contract("DixelClubV2NFT", function(accounts) {
       });
     }); // pagination
 
-    describe.only("remove whitelist", function() {
+    describe("remove whitelist", function() {
       beforeEach(async function() {
         await this.collection.addWhitelist([carol, alice, bob], { from: alice }); // total 5: a, b, c, a, b
       });

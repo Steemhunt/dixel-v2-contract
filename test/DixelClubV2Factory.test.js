@@ -166,7 +166,10 @@ contract("DixelClubV2Factory", function(accounts) {
       await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
     });
 
-    // TODO: INVALID_CREATION_FEE_SENT
+    it("should check if the correct creation fee has sent", async function() {
+      this.testParams[5].value = this.creationFee.sub(new BN("1"));
+      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_CREATION_FEE_SENT");
+    });
   });
 
   describe("creation fee", function() {
