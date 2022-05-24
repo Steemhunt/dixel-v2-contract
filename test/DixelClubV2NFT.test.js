@@ -302,25 +302,26 @@ contract("DixelClubV2NFT", function(accounts) {
       });
     }); // pagination
 
-    describe("creator functions", function() {
-      it("addWhitelist can be only called by the owner of the collection", async function() {
-        await expectRevert(
-          this.collection.addWhitelist([bob], { from: bob }),
-          "Ownable: caller is not the owner"
-        );
+    describe.only("remove whitelist", function() {
+      beforeEach(async function() {
+        await this.collection.addWhitelist([carol, alice, bob], { from: alice }); // total 5: a, b, c, a, b
       });
 
-      it("addWhitelist cannot be called on public collection", async function() {
-        const collection2 = await createCollection(this.factory, alice);
-
-        await expectRevert(
-          collection2.addWhitelist([bob], { from: alice }),
-          "COLLECTION_IS_PUBLIC"
-        );
+      it("should remove a whitelist correctly", async function() {
+        await this.collection.removeWhitelist([alice], { from: alice }); // b, b, c, a
+        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([bob, bob, carol, alice]);
       });
 
-      // TODO: removeWhitelist
-    }); // creator functions
+      it("should remove multiple whitelists correctly", async function() {
+        await this.collection.removeWhitelist([alice, carol], { from: alice }); // b, b, c, a -> b, b, a
+        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([bob, bob, alice]);
+      });
+
+      it("should skip if a list item doesn't exsit on the whitelist", async function() {
+        await this.collection.removeWhitelist([deployer, carol], { from: alice }); // a, b, b, a
+        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([alice, bob, bob, alice]);
+      });
+    }); // remove whitelist
 
     describe("after minting", async function() {
       beforeEach(async function() {
@@ -344,6 +345,20 @@ contract("DixelClubV2NFT", function(accounts) {
     }); // after minting
 
     describe("edge cases", async function() {
+      it("addWhitelist can be only called by the owner of the collection", async function() {
+        await expectRevert(
+          this.collection.addWhitelist([bob], { from: bob }),
+          "Ownable: caller is not the owner"
+        );
+      });
+
+      it("removeWhitelist can be only called by the owner of the collection", async function() {
+        await expectRevert(
+          this.collection.removeWhitelist([bob], { from: bob }),
+          "Ownable: caller is not the owner"
+        );
+      });
+
       it("should not allow except whitelisted wallet to mint", async function() {
         await expectRevert(
           this.collection.mint(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),
@@ -365,8 +380,23 @@ contract("DixelClubV2NFT", function(accounts) {
         expect(await this.collection.getWhitelistAllowanceLeft(alice)).to.be.bignumber.equal("3");
       });
 
-      // TODO:
+      it("addWhitelist cannot be called on public collection", async function() {
+        const collection2 = await createCollection(this.factory, alice);
 
+        await expectRevert(
+          collection2.addWhitelist([bob], { from: alice }),
+          "COLLECTION_IS_PUBLIC"
+        );
+      });
+
+      it("removeWhitelist cannot be called on public collection", async function() {
+        const collection2 = await createCollection(this.factory, alice);
+
+        await expectRevert(
+          collection2.removeWhitelist([bob], { from: alice }),
+          "COLLECTION_IS_PUBLIC"
+        );
+      });
     }); // edge cases
   }); // whitelist
 });

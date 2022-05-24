@@ -153,6 +153,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
             if (_whitelist[i] == wallet) {
                 _whitelist[i] = _whitelist[_whitelist.length - 1]; // put the last element into the delete index
                 _whitelist.pop(); // delete the last element to decrease array length;
+
+                break; // delete the first matching one and stop
             }
         }
     }
