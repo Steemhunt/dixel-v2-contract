@@ -22,15 +22,15 @@ npx hardhat test
 
 ### Ethereum Testnet (Goerli)
 - DixelClubV2Factory: 0x0d4C86C5Ef86dFd9B8f0cb87142b2cc74cbC7160
-- DixelClubV2NFT: 0x660beB85a1c87ADDFea0D8B8aC84D78B4faba95D
+- DixelClubV2NFT (implementation contract): 0x660beB85a1c87ADDFea0D8B8aC84D78B4faba95D
 
 ### Klaytn Testnet (Baobob)
 - DixelClubV2Factory: 0xBa027F31B693a79Dc876fF78c7E6c10113A4A8B0
-- DixelClubV2NFT: 0x2458FD9A19Eb753fAAAC8777dE3AeC78394a9b55
+- DixelClubV2NFT (implementation contract): 0x2458FD9A19Eb753fAAAC8777dE3AeC78394a9b55
 
 ### BSC Testnet
 - DixelClubV2Factory: 0x908143657e7b455363b4ab666Af92d38312E4B43
-- DixelClubV2NFT: 0x8291927763DfED9F9D29dD144564ab69A79cE2AB
+- DixelClubV2NFT (implementation contract): 0x8291927763DfED9F9D29dD144564ab69A79cE2AB
 
 ## Deploy
 ```bash
