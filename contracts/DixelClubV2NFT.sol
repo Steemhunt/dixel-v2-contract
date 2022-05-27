@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 
 pragma solidity ^0.8.13;
 
@@ -10,7 +10,7 @@ import "base64-sol/base64.sol";
 import "./lib/ERC721Enumerable.sol";
 import "./lib/ColorUtils.sol";
 import "./lib/StringUtils.sol";
-import "./DixelClubV2Factory.sol";
+import "./IDixelClubV2Factory.sol";
 import "./Shared.sol";
 import "./SVGGenerator.sol"; // inheriting Constants
 
@@ -25,7 +25,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdTracker;
-    DixelClubV2Factory private _factory;
+    IDixelClubV2Factory private _factory;
 
     uint40 public initializedAt;
 
@@ -59,7 +59,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         require(initializedAt == 0, "CONTRACT_ALREADY_INITIALIZED");
         initializedAt = uint40(block.timestamp);
 
-        _factory = DixelClubV2Factory(msg.sender);
+        _factory = IDixelClubV2Factory(msg.sender);
 
         // ERC721 attributes
         _name = name_;
@@ -230,7 +230,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
             '","description":"',
             _metaData.description,
             '","external_url":"https://dixel.club/collection/',
-            StringUtils.address2str(address(this)), '/', ColorUtils.uint2str(tokenId),
+            ColorUtils.uint2str(block.chainid), '/', StringUtils.address2str(address(this)), '/', ColorUtils.uint2str(tokenId),
             '","image":"',
             generateBase64SVG(tokenId),
             '"}'
@@ -246,7 +246,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
             '","image":"',
             generateBase64SVG(0),
             '","external_link":"https://dixel.club/collection/',
-            StringUtils.address2str(address(this)),
+            ColorUtils.uint2str(block.chainid), '/', StringUtils.address2str(address(this)),
             '","seller_fee_basis_points":"',
             ColorUtils.uint2str(_metaData.royaltyFriction),
             '","fee_recipient":"',

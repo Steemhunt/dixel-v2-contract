@@ -155,8 +155,9 @@ contract("DixelClubV2NFT", function(accounts) {
 
       describe("generate tokenJSON and URI", function() {
         beforeEach(async function() {
+          // NOTE: block.chainid returns 0 on hardhat network for some reason. We should check if it returns a correct value on mainnets.
           this.json = `{"name":"${TEST_DATA.symbol} #1","description":"${TEST_DATA.metaData.description}",` +
-            `"external_url":"https://dixel.club/collection/${this.collection.address.toLowerCase()}/1","image":"${this.base64Image}"}`;
+            `"external_url":"https://dixel.club/collection/0/${this.collection.address.toLowerCase()}/1","image":"${this.base64Image}"}`;
         });
 
         it("tokenJSON", async function() {
@@ -171,9 +172,10 @@ contract("DixelClubV2NFT", function(accounts) {
 
     describe("generate contract level metadata", function() {
       beforeEach(async function() {
+        // NOTE: block.chainid returns 0 on hardhat network for some reason. We should check if it returns a correct value on mainnets.
         const token0SVG = `data:image/svg+xml;base64,${Buffer.from(fs.readFileSync(`${__dirname}/fixtures/test-svg.svg`, 'utf8')).toString('base64')}`;
         this.json = `{"name":"${TEST_DATA.name}","description":"${TEST_DATA.metaData.description}",` +
-          `"image":"${token0SVG}","external_link":"https://dixel.club/collection/${this.collection.address.toLowerCase()}",` +
+          `"image":"${token0SVG}","external_link":"https://dixel.club/collection/0/${this.collection.address.toLowerCase()}",` +
           `"seller_fee_basis_points":"${TEST_DATA.metaData.royaltyFriction}","fee_recipient":"${alice.toLowerCase()}"}`;
       });
 

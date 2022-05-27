@@ -28,6 +28,10 @@ npx hardhat test
 - DixelClubV2Factory: 0xBa027F31B693a79Dc876fF78c7E6c10113A4A8B0
 - DixelClubV2NFT (implementation contract): 0x2458FD9A19Eb753fAAAC8777dE3AeC78394a9b55
 
+### Klaytn Mainnet Test
+- DixelClubV2Factory: 0x316c0100a979dE8FE2f07c4Aa03287Ea4D712d4f
+- DixelClubV2NFT (implementation contract):
+
 ### BSC Testnet
 - DixelClubV2Factory: 0x908143657e7b455363b4ab666Af92d38312E4B43
 - DixelClubV2NFT (implementation contract): 0x8291927763DfED9F9D29dD144564ab69A79cE2AB

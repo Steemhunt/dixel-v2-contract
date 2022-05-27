@@ -38,7 +38,8 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      blockGasLimit: 60000000,
+      chainId: 31337,
+      blockGasLimit: 60000000
     },
     goerli: {
       url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_GOERLI_API_KEY}`,
@@ -82,7 +83,7 @@ module.exports = {
     coinmarketcap: process.env.COIN_MARKET_CAP_API
   },
   etherscan: {
-    apiKey: process.env.BSCSCAN_API_KEY // ETHERSCAN_API_KEY / BSCSCAN_API_KEY
+    apiKey: process.env.ETHERSCAN_API_KEY // ETHERSCAN_API_KEY / BSCSCAN_API_KEY
   },
   mocha: {
     timeout: 120000 // 2 minutes for test timeout
