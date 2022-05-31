@@ -1,4 +1,4 @@
-const { ether, balance, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { ether, balance, time, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256, ZERO_ADDRESS } = constants;
 const { expect } = require("chai");
 const fs = require("fs");
@@ -12,6 +12,7 @@ const TEST_DATA = {
   symbol: 'TESTNFT',
   metaData: {
     whitelistOnly: false,
+    hidden: false,
     maxSupply: 10,
     royaltyFriction: 500, // 5%
     mintingBeginsFrom: 0, // start immediately
@@ -94,7 +95,7 @@ contract("DixelClubV2NFT", function(accounts) {
         "MINTING_NOT_STARTED_YET"
       );
     });
-  });
+  }); // edge cases
 
   describe("minting a new edition", function() {
     beforeEach(async function() {
@@ -188,7 +189,7 @@ contract("DixelClubV2NFT", function(accounts) {
         expect(await this.collection.contractURI()).to.equal(base64);
       });
     });
-  });
+  }); // mintingn a new edition
 
   describe("burn", function() {
     beforeEach(async function() {
@@ -246,7 +247,7 @@ contract("DixelClubV2NFT", function(accounts) {
         expect(await this.collection.totalSupply()).to.be.bignumber.equal("1");
       });
     });
-  });
+  }); // burn
 
   describe("whitelist", function() {
     beforeEach(async function() {
@@ -401,4 +402,101 @@ contract("DixelClubV2NFT", function(accounts) {
       });
     }); // edge cases
   }); // whitelist
+
+  describe("update metadata", function() {
+    // MARK: - updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint40 mintingBeginsFrom, uint256 mintingCost)
+
+    it("updates whitelistOnly", async function() {
+      const collection = await createCollection(this.factory, deployer, { whitelistOnly: true });
+      await collection.addWhitelist([alice, bob]);
+      expect(await collection.getWhitelistCount()).to.be.bignumber.equal("2"); // initial check
+
+      await collection.updateMetadata(false, false, "500", "0", "0");
+
+      const metaData = await collection.metaData();
+      expect(metaData.whitelistOnly_).to.equal(false);
+      expect(await collection.getWhitelistCount()).to.be.bignumber.equal("0");
+    });
+
+    it("updates hidden status", async function() {
+      const collection = await createCollection(this.factory, deployer, { hidden: true });
+      expect((await collection.listData()).hidden_).to.equal(true);
+
+      await collection.updateMetadata(false, false, "500", "0", "0");
+      expect((await collection.listData()).hidden_).to.equal(false);
+    });
+
+    it("updates royaltyFriction", async function() {
+      const collection = await createCollection(this.factory, deployer, { royaltyFriction: "100" });
+      expect((await collection.metaData()).royaltyFriction_).to.be.bignumber.equal("100");
+
+      await collection.updateMetadata(false, false, "200", "0", "0");
+      expect((await collection.metaData()).royaltyFriction_).to.be.bignumber.equal("200");
+    });
+
+    it("updates mintingBeginsFrom", async function() {
+      const later = (await time.latest()).add(new BN("1000"));
+      const collection = await createCollection(this.factory, deployer, { mintingBeginsFrom: later });
+      expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.equal(later);
+
+      await collection.updateMetadata(false, false, "500", "1", "0");
+      expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.equal("1");
+    });
+
+    it("updates mintingCost", async function() {
+      const collection = await createCollection(this.factory, deployer, { mintingCost: ether("2") });
+      expect((await collection.metaData()).mintingCost_).to.be.bignumber.equal(ether("2"));
+
+      await collection.updateMetadata(false, false, "200", "0", ether("3"));
+      expect((await collection.metaData()).mintingCost_).to.be.bignumber.equal(ether("3"));
+    });
+
+    // MARK: - updateDescription(string memory description)
+
+    it("updates description", async function() {
+      const collection = await createCollection(this.factory, deployer, { description: "abcd" });
+      expect((await collection.metaData()).description_).to.equal("abcd");
+
+      const newDescription = "ah ah whatever!!! 😉 hahah ha!";
+      await collection.updateDescription(newDescription);
+      expect((await collection.metaData()).description_).to.equal(newDescription);
+    });
+
+    describe("edge cases", function() {
+      beforeEach(async function() {
+        this.collection = await createCollection(this.factory, alice);
+      });
+
+      it("should not allow non-owner can update metadata", async function() {
+        await expectRevert(
+          this.collection.updateMetadata(false, false, "500", "0", ether("1"), { from: bob }),
+          "Ownable: caller is not the owner"
+        );
+      });
+
+      it("checks royalty friction range", async function () {
+        const invalidValue = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
+        await expectRevert(
+          this.collection.updateMetadata(false, false, invalidValue, "0", ether("1"), { from: alice }),
+          "INVALID_ROYALTY_FRICTION"
+        );
+      });
+
+      it("checks if minting had already begun ", async function () {
+        await expectRevert(
+          this.collection.updateMetadata(false, false, "0", "1", ether("1"), { from: alice }),
+          "CANNOT_UPDATE_MITING_TIME_ONCE_STARTED"
+        );
+      });
+
+      it("should check if description is over 1,000 characters", async function() {
+        const longDescription = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
+        await expectRevert(this.collection.updateDescription(longDescription, { from: alice }), "DESCRIPTION_TOO_LONG");
+      });
+
+      it("should check if description contains a quote", async function() {
+        await expectRevert(this.collection.updateDescription('hello "', { from: alice }), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
+      });
+    }); // edge case
+  }); // update metadata
 });

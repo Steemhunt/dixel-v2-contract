@@ -13,6 +13,7 @@ const TEST_DATA = {
   symbol: 'TESTNFT',
   metaData: {
     whitelistOnly: false,
+    hidden: false,
     maxSupply: 10,
     royaltyFriction: 500, // 5%
     mintingBeginsFrom: 0, // start immediately
@@ -142,19 +143,19 @@ contract("DixelClubV2Factory", function(accounts) {
       await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CANNOT_BE_BLANK");
     });
     it("should check if maxSupply is over 0", async function() {
-      this.testParams[2][1] = 0;
+      this.testParams[2][2] = 0;
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
     });
     it("should check if maxSupply is less than the max value", async function() {
-      this.testParams[2][1] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
+      this.testParams[2][2] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
     });
     it("should check if royaltyFriction is less than the max value", async function() {
-      this.testParams[2][2] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
+      this.testParams[2][3] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_ROYALTY_FRICTION");
     });
     it("should check if description is over 1,000 characters", async function() {
-      this.testParams[2][5] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
+      this.testParams[2][6] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
       await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_TOO_LONG");
     });
     it("should check if symbol contains a quote", async function() {
@@ -162,7 +163,7 @@ contract("DixelClubV2Factory", function(accounts) {
       await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CONTAINS_MALICIOUS_CHARACTER");
     });
     it("should check if description contains a quote", async function() {
-      this.testParams[2][5] = 'what ever ""';
+      this.testParams[2][6] = 'what ever ""';
       await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
     });
 
@@ -204,16 +205,25 @@ contract("DixelClubV2Factory", function(accounts) {
       expect(await this.collection.symbol()).to.equal(TEST_DATA.symbol);
     });
 
-    describe("should have correct collection meta data", function() {
+    describe("should have correct collection list data", function() {
       beforeEach(async function() {
-        this.metaData = await this.collection.metaData();
+        this.listData = await this.collection.listData();
       });
 
       it("initializedAt", async function() {
         // Fuzzy checking on `initializedAt` timestamp
         const now = await time.latest();
-        expect(this.metaData.initializedAt_).to.be.bignumber.lte(now);
-        expect(this.metaData.initializedAt_).to.be.bignumber.gt(now.sub(new BN("20")));
+        expect(this.listData.initializedAt_).to.be.bignumber.lte(now);
+        expect(this.listData.initializedAt_).to.be.bignumber.gt(now.sub(new BN("20")));
+      });
+      it("hidden", async function() {
+        expect(this.listData.hidden_).to.equal(TEST_DATA.metaData.hidden);
+      });
+    });
+
+    describe("should have correct collection meta data", function() {
+      beforeEach(async function() {
+        this.metaData = await this.collection.metaData();
       });
 
       it("whitelistOnly", async function() {
