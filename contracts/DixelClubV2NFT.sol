@@ -258,7 +258,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         _metaData.mintingCost = mintingCost;
     }
 
-    function updateDescription(string memory description) external onlyOwner {
+    function updateDescription(string calldata description) external onlyOwner {
         if (bytes(description).length > 1000) revert DixelClubV2__DescriptionTooLong(); // ~900 gas per character
         if (StringUtils.contains(description, 0x22)) revert DixelClubV2__ContainMalicious();
 
