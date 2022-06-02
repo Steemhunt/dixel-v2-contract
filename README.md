@@ -13,6 +13,12 @@ Pixel Art NFT factory that users can:
       - whitelist can be added by the creator later (wallet address, minting allowance)
 2. Collectors: Mint a new edition on an existing collection with color variations
 
+## Community Audit
+We are holding a community-based security audit with **$10,000 USDT bounty** and we're inviting all developer community!
+If you're willing to participate, please read the instructions below:
+
+Community Audit Guide: https://github.com/Steemhunt/dixel-v2-contract/blob/main/COMMUNITY_AUDIT.md
+
 ## Run Tests
 ```bash
 npx hardhat test
