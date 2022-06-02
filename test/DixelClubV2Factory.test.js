@@ -123,13 +123,13 @@ contract("DixelClubV2Factory", function(accounts) {
     it("should not be able to set beneficiary as zero address", async function() {
       await expectRevert(
         this.factory.updateBeneficiary(ZERO_ADDRESS, "0", "0"),
-        "BENEFICIARY_CANNOT_BE_NULL"
+        "DixelClubV2Factory__ZeroAddress"
       );
     });
     it("should not be able to set mintingFee over base friction (10,000)", async function() {
       await expectRevert(
         this.factory.updateBeneficiary(bob, "0", "10001"),
-        "INVALID_FEE_FRICTION"
+        "DixelClubV2Factory__InvalidFee"
       );
     });
   });
