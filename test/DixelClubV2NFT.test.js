@@ -288,7 +288,7 @@ contract("DixelClubV2NFT", function(accounts) {
       });
 
       it("should return all whitelist correctly", async function() {
-        const list = await this.collection.getAllWhitelist("0", "2");
+        const {list, counts} = await this.collection.getAllWhitelist("0", "2");
         expect(list[0]).to.equal(alice);
         expect(list[1]).to.equal(bob);
       });
@@ -302,44 +302,57 @@ contract("DixelClubV2NFT", function(accounts) {
       });
 
       it("should paginate correctly with offset and limit", async function() {
-        const list = await this.collection.getAllWhitelist("2", "3");
-        expect(list.length).to.equal(3);
+        // list: alice, bob, carol;
+        // counts: 2, 3, 3
+        const {list, counts} = await this.collection.getAllWhitelist("2", "3");
+        expect(list.length).to.equal(1);
         expect(list[0]).to.equal(carol);
-        expect(list[1]).to.equal(alice);
-        expect(list[2]).to.equal(bob);
+        expect(counts[0]).to.bignumber.equal("3");
       });
 
       it("should return empty array if offset >= length", async function() {
-        const list = await this.collection.getAllWhitelist("10", "3");
+        const {list, counts} = await this.collection.getAllWhitelist("10", "3");
         expect(list.length).to.equal(0);
+        expect(counts.length).to.equal(0);
       });
 
       it("should output all results up to the end of the array if offset + limit > whitelist length", async function() {
-        const list = await this.collection.getAllWhitelist("8", "5");
-        expect(list.length).to.equal(2);
-        expect(list[0]).to.equal(bob);
-        expect(list[1]).to.equal(bob);
+        const {list, counts} = await this.collection.getAllWhitelist("2", "1");
+        expect(list.length).to.equal(1);
+        expect(list[0]).to.equal(carol);
+        expect(counts[0]).to.bignumber.equal("3");
       });
     }); // pagination
 
     describe("remove whitelist", function() {
       beforeEach(async function() {
-        await this.collection.addWhitelist([carol, alice, bob], { from: alice }); // total 5: a, b, c, a, b
+        await this.collection.addWhitelist([carol, alice, bob], { from: alice }); // total 5: a:2, b:2, c:1
       });
 
       it("should remove a whitelist correctly", async function() {
-        await this.collection.removeWhitelist([alice], { from: alice }); // b, b, c, a
-        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([bob, bob, carol, alice]);
+        await this.collection.removeWhitelist([alice], { from: alice }); // a:1, b:2, c:1
+        const {list, counts} = await this.collection.getAllWhitelist("0", "100");
+        expect(list).to.deep.equal([alice, bob, carol]);
+        expect(counts[0]).to.bignumber.equal("1");
+        expect(counts[1]).to.bignumber.equal("2");
+        expect(counts[2]).to.bignumber.equal("1");
       });
 
       it("should remove multiple whitelists correctly", async function() {
-        await this.collection.removeWhitelist([alice, carol], { from: alice }); // b, b, c, a -> b, b, a
-        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([bob, bob, alice]);
+        await this.collection.removeWhitelist([alice, bob, alice], { from: alice }); // b, b, c, a -> b, b, a
+        const {list, counts} = await this.collection.getAllWhitelist("0", "100");
+        expect(list).to.deep.equal([carol, bob]);
+        expect(counts[0]).to.deep.bignumber.equal("1");
+        expect(counts[1]).to.deep.bignumber.equal("1");
       });
 
       it("should skip if a list item doesn't exsit on the whitelist", async function() {
-        await this.collection.removeWhitelist([deployer, carol], { from: alice }); // a, b, b, a
-        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([alice, bob, bob, alice]);
+        await expectRevert(
+          this.collection.removeWhitelist([deployer, carol], { from: alice }), // a, b, b, a
+          "0x11" // underflow or overflowed
+        );
+        const {list, } = await this.collection.getAllWhitelist("0", "100");
+        expect(list).to.deep.equal([alice, bob, carol]);
       });
     }); // remove whitelist
 
@@ -389,10 +402,9 @@ contract("DixelClubV2NFT", function(accounts) {
       it("should return duplicated results", async function() {
         await this.collection.addWhitelist([bob], { from: alice });
 
-        const list = await this.collection.getAllWhitelist("0", "3");
+        const {list, } = await this.collection.getAllWhitelist("0", "3");
         expect(list[0]).to.equal(alice);
         expect(list[1]).to.equal(bob);
-        expect(list[2]).to.equal(bob);
       });
 
       it("should return a crrect allowance once duplicated", async function() {

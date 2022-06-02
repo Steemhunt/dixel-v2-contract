@@ -38,13 +38,21 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         uint24[PALETTE_SIZE] palette; // 24bit color (16,777,216) - up to 16 colors
     }
 
+    struct PosAndC {
+        uint96 Position;
+        uint96 Count;
+        bool init;
+        mapping(address => bool) hitted;
+    }
+
     IDixelClubV2Factory private _factory;
     uint32 private _initializedAt;
     uint256 private _tokenIdTracker;
     Shared.MetaData private _metaData; // Collection meta data
+    mapping(address => PosAndC) private _whitelistData;
+    address[] private _whitelist;
     EditionData[] private _editionData; // Color (palette) data for each edition
     uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
-    address[] private _whitelist;
     string private _description;
 
     event Mint(address indexed to, uint256 indexed tokenId);
@@ -156,25 +164,30 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         uint256 length = list.length; // gas saving
         for (uint256 i; i != length; ) {
-            _whitelist.push(list[i]);
+            address curr = list[i]; // gas saving
+            PosAndC storage pc = _whitelistData[curr];
+
+            if (!_whitelistData[address(0)].hitted[curr]) {
+                _whitelistData[address(0)].hitted[curr] = true;
+                _whitelist.push(curr);
+                (pc.Position, pc.init) = (uint96(_whitelist.length) - 1, true);
+            }
+
             unchecked {
+                ++pc.Count;
                 ++i;
             }
         }
+
+        delete _whitelistData[address(0)];
     }
 
     function _removeWhitelist(address wallet) private {
-        uint256 length = _whitelist.length;
-        for (uint256 i; i != length;) {
-            if (_whitelist[i] == wallet) {
-                _whitelist[i] = _whitelist[length - 1]; // put the last element into the delete index
-                _whitelist.pop(); // delete the last element to decrease array length;
-
-                break; // delete the first matching one and stop
-            }
-            unchecked {
-                ++i;
-            }
+        PosAndC storage pc = _whitelistData[wallet];
+        if (--pc.Count == 0 && pc.init == true) {
+            _whitelist[pc.Position] = _whitelist[_whitelist.length - 1];
+            _whitelist.pop();
+            delete _whitelistData[wallet];
         }
     }
 
@@ -183,28 +196,31 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
 
         uint256 length = list.length; // gas saving
-        for (uint256 i; i < length;) {
+        for (uint256 i; i != length;) {
             _removeWhitelist(list[i]);
             unchecked {
-                ++i;
+                i++;
             }
         }
     }
 
     // @dev offset & limit for pagination
-    function getAllWhitelist(uint256 offset, uint256 limit) external view returns (address[] memory list) {
+    function getAllWhitelist(uint256 offset, uint256 limit) external view returns (address[] memory list, uint96[] memory counts) {
         uint256 length = _whitelist.length;
         uint256 count = limit;
 
         if (offset >= length) {
-            return list; // empty list
+            return (list, counts); // empty list
         } else if (offset + limit > length) {
             count = length - offset;
         }
 
         list = new address[](count);
-        for (uint256 i = 0; i != count;) {
+        counts = new uint96[](count);
+        for (uint256 i; i != count;) {
             list[i] = _whitelist[offset + i];
+            counts[i] = _whitelistData[list[i]].Count;
+
             unchecked {
                 ++i;
             }
@@ -216,31 +232,11 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
 
     function getWhitelistAllowanceLeft(address wallet) external view returns (uint256 allowance) {
-        uint256 length = _whitelist.length; // gas saving
-        for (uint256 i; i != length; ) {
-            if (_whitelist[i] == wallet) {
-                allowance++;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-
-        return allowance;
+        allowance = _whitelistData[wallet].Count;
     }
 
     function isWhitelistWallet(address wallet) public view returns (bool) {
-        uint256 length = _whitelist.length; // gas saving
-        for (uint256 i; i != length; ) {
-            if (_whitelist[i] == wallet) {
-                return true;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-
-        return false;
+        return _whitelistData[wallet].init;
     }
 
 
