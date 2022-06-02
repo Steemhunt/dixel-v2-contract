@@ -137,40 +137,40 @@ contract("DixelClubV2Factory", function(accounts) {
   describe("create a collection - validation", function() {
     it("should check if name is blank", async function() {
       this.testParams[0] = "";
-      await expectRevert(this.factory.createCollection(...this.testParams), "NAME_CANNOT_BE_BLANK");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__BlankedName");
     });
     it("should check if symbol is blank", async function() {
       this.testParams[1] = "";
-      await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CANNOT_BE_BLANK");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__BlankedSymbol");
     });
     it("should check if maxSupply is over 0", async function() {
       this.testParams[3][2] = 0;
-      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__InvalidMaxSupply");
     });
     it("should check if maxSupply is less than the max value", async function() {
       this.testParams[3][2] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
-      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__InvalidMaxSupply");
     });
     it("should check if royaltyFriction is less than the max value", async function() {
       this.testParams[3][3] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
-      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_ROYALTY_FRICTION");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__InvalidRoyalty");
     });
     it("should check if description is over 1,000 characters", async function() {
       this.testParams[2] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
-      await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_TOO_LONG");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionTooLong");
     });
     it("should check if symbol contains a quote", async function() {
       this.testParams[1] = 'SYMBOL"';
-      await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CONTAINS_MALICIOUS_CHARACTER");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
     });
     it("should check if description contains a quote", async function() {
       this.testParams[2] = 'what ever ""';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
     });
 
     it("should check if the correct creation fee has sent", async function() {
       this.testParams[6].value = this.creationFee.sub(new BN("1"));
-      await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_CREATION_FEE_SENT");
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__InvalidCreationFee");
     });
   });
 
