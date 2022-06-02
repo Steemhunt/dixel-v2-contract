@@ -26,7 +26,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     error DixelClubV2__InvalidCost(uint256 expected, uint256 actual);
     error DixelClubV2__MaximumMinted();
     error DixelClubV2__NotStarted(uint32 beginAt, uint32 nowAt);
-    error DixelClubV2__NotWhitelisted();
     error DixelClubV2__NotApproved();
     error DixelClubV2__PublicCollection();
     error DixelClubV2__InvalidRoyalty(uint256 invalid);
@@ -102,11 +101,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         if(uint32(block.timestamp) < _metaData.mintingBeginsFrom) revert DixelClubV2__NotStarted(_metaData.mintingBeginsFrom, uint32(block.timestamp));
 
         // For whitelist only collections
-        if (_metaData.whitelistOnly) {
-            if(!isWhitelistWallet(msg.sender)) revert DixelClubV2__NotWhitelisted();
-
-            _removeWhitelist(msg.sender); // decrease allowance by 1
-        }
+        if (_metaData.whitelistOnly) _removeWhitelist(msg.sender); // decrease allowance by 1
 
         if (mintingCost > 0) {
             // Send fee to the beneficiary
@@ -166,14 +161,17 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
 
         uint256 length = list.length; // gas saving
+        address curr; // gas saving
         for (uint256 i; i != length; ) {
-            address curr = list[i]; // gas saving
+            curr = list[i];
             PosAndC storage pc = _whitelistData[curr];
 
             if (!_whitelistData[address(0)].hitted[curr]) {
                 _whitelistData[address(0)].hitted[curr] = true;
                 _whitelist.push(curr);
-                (pc.Position, pc.init) = (uint96(_whitelist.length) - 1, true);
+                unchecked {
+                    (pc.Position, pc.init) = (uint96(_whitelist.length) - 1, true);
+                }
             }
 
             unchecked {

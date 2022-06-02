@@ -364,7 +364,7 @@ contract("DixelClubV2NFT", function(accounts) {
       it("cannot mint more than allowance", async function() {
         await expectRevert(
           this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }),
-          "DixelClubV2__NotWhitelisted"
+          "0x11" // underflow or overflowed from whitelist allowance count
         );
       });
 
@@ -395,7 +395,7 @@ contract("DixelClubV2NFT", function(accounts) {
       it("should not allow except whitelisted wallet to mint", async function() {
         await expectRevert(
           this.collection.mint(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),
-          "DixelClubV2__NotWhitelisted"
+          "0x11" // underflow or overflowed from whitelist allowance count
         );
       });
 
