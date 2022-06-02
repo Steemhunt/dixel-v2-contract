@@ -59,23 +59,24 @@ contract DixelClubV2Factory is Constants, Ownable {
     function createCollection(
         string calldata name,
         string calldata symbol,
+        string calldata description,
         Shared.MetaData calldata metaData,
         uint24[PALETTE_SIZE] calldata palette,
         uint8[TOTAL_PIXEL_COUNT] calldata pixels
     ) external payable returns (address payable) {
         if(bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
         if(bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();
-        if(bytes(metaData.description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
+        if(bytes(description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
         if(metaData.maxSupply == 0 || metaData.maxSupply > MAX_SUPPLY) revert DixelClubV2Factory__InvalidMaxSupply();
         if(metaData.royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2Factory__InvalidRoyalty();
 
         // Validate `symbol`, `name` and `description` to ensure generateJSON() creates a valid JSON
         if(StringUtils.contains(name, 0x22)) revert DixelClubV2Factory__NameContainedMalicious();
         if(StringUtils.contains(symbol, 0x22)) revert DixelClubV2Factory__SymbolContainedMalicious();
-        if(StringUtils.contains(metaData.description, 0x22)) revert DixelClubV2Factory__DescriptionContainedMalicious();
+        if(StringUtils.contains(description, 0x22)) revert DixelClubV2Factory__DescriptionContainedMalicious();
 
         if (creationFee > 0) {
-            if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee(); 
+            if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
 
             // Send fee to the beneficiary
             (bool sent, ) = beneficiary.call{ value: creationFee }("");
@@ -84,7 +85,7 @@ contract DixelClubV2Factory is Constants, Ownable {
 
         address payable nftAddress = _createClone(nftImplementation);
         DixelClubV2NFT newNFT = DixelClubV2NFT(nftAddress);
-        newNFT.init(msg.sender, name, symbol, metaData, palette, pixels);
+        newNFT.init(msg.sender, name, symbol, description, metaData, palette, pixels);
 
         collections.push(nftAddress);
 
