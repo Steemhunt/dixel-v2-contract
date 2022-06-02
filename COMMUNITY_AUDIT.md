@@ -14,3 +14,5 @@ $10,000 USDT will be distributed on 13 June, proportional to the amount of contr
 If there is only 1 contributor, he/she will receive all the bounty. If there are 5 contributors, the bounty will be distributed proportional to the amount of contributions made.
 
 Within the first PR or the issue, please write down the USDT wallet address you would like to receive the bounty. Please specify the chain as well (Ethereum, BNB Smart Chain, Solana, AVAX C-Chain, Polygon, Tron).
+
++ We may create a NFT collection for dev contributors and all valid participants will be added to the whitelist
