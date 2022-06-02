@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "base64-sol/base64.sol";
 import "./lib/ERC721Enumerable.sol";
 import "./lib/ColorUtils.sol";
@@ -22,6 +23,11 @@ import "./SVGGenerator.sol"; // inheriting Constants
  *  - token ID and URI autogeneration
  */
 contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
+
+
+    //For whitelisting
+    bytes32 private _merkleRootHash;
+
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdTracker;
@@ -76,7 +82,11 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         _mintNewEdition(owner_, palette_);
     }
 
-    function mint(address to, uint24[PALETTE_SIZE] memory palette) public payable {
+    function setRootHash(bytes32 rootHash) external onlyOwner {
+        _merkleRootHash = rootHash;
+    }
+
+    function mint(address to, uint24[PALETTE_SIZE] memory palette, bytes32[] calldata _merkleProof) public payable {
         uint256 mintingCost = _metaData.mintingCost;
 
         require(msg.value == mintingCost, "INVALID_MINTING_COST_SENT");
@@ -85,9 +95,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         // For whitelist only collections
         if (_metaData.whitelistOnly) {
-            require(isWhitelistWallet(msg.sender), "NOT_IN_WTHIELIST");
-
-            _removeWhitelist(msg.sender); // decrease allowance by 1
+            bytes32 leafHash = keccak256(abi.encodePacked(msg.sender));
+            require(MerkleProof.verify(_merkleProof, _merkleRootHash, leafHash), "not in whilelist");
         }
 
         if (mintingCost > 0) {
