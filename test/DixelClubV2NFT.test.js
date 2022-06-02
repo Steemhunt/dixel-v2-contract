@@ -10,6 +10,7 @@ const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.
 const TEST_DATA = {
   name: 'Test Collection',
   symbol: 'TESTNFT',
+  description: 'This is a test collection',
   metaData: {
     whitelistOnly: false,
     hidden: false,
@@ -17,14 +18,14 @@ const TEST_DATA = {
     royaltyFriction: 500, // 5%
     mintingBeginsFrom: 0, // start immediately
     mintingCost: ether("1"),
-    description: 'This is a test collection',
   }
 };
 
-async function createCollection(factory, creator, customMetaData = {}) {
+async function createCollection(factory, creator, customMetaData = {}, customDesc = "") {
   const receipt = await factory.createCollection(
     TEST_DATA.name,
     TEST_DATA.symbol,
+    customDesc || TEST_DATA.description,
     Object.values(Object.assign({}, TEST_DATA.metaData, customMetaData)),
     TEST_INPUT.palette,
     TEST_INPUT.pixels,
@@ -56,7 +57,7 @@ contract("DixelClubV2NFT", function(accounts) {
       const collection = await createCollection(this.factory);
 
       await expectRevert(
-        collection.init(alice, TEST_DATA.name, TEST_DATA.symbol, Object.values(TEST_DATA.metaData), TEST_INPUT.palette, TEST_INPUT.pixels),
+        collection.init(alice, TEST_DATA.name, TEST_DATA.symbol, TEST_DATA.description, Object.values(TEST_DATA.metaData), TEST_INPUT.palette, TEST_INPUT.pixels),
         "DixelClubV2__Initalized"
       );
     });
@@ -165,7 +166,7 @@ contract("DixelClubV2NFT", function(accounts) {
       describe("generate tokenJSON and URI", function() {
         beforeEach(async function() {
           // NOTE: block.chainid returns 0 on hardhat network for some reason. We should check if it returns a correct value on mainnets.
-          this.json = `{"name":"${TEST_DATA.symbol} #1","description":"${TEST_DATA.metaData.description}",` +
+          this.json = `{"name":"${TEST_DATA.symbol} #1","description":"${TEST_DATA.description}",` +
             `"external_url":"https://dixel.club/collection/0/${this.collection.address.toLowerCase()}/1","image":"${this.base64Image}"}`;
         });
 
@@ -191,7 +192,7 @@ contract("DixelClubV2NFT", function(accounts) {
       beforeEach(async function() {
         // NOTE: block.chainid returns 0 on hardhat network for some reason. We should check if it returns a correct value on mainnets.
         const token0SVG = `data:image/svg+xml;base64,${Buffer.from(fs.readFileSync(`${__dirname}/fixtures/test-svg.svg`, 'utf8')).toString('base64')}`;
-        this.json = `{"name":"${TEST_DATA.name}","description":"${TEST_DATA.metaData.description}",` +
+        this.json = `{"name":"${TEST_DATA.name}","description":"${TEST_DATA.description}",` +
           `"image":"${token0SVG}","external_link":"https://dixel.club/collection/0/${this.collection.address.toLowerCase()}",` +
           `"seller_fee_basis_points":"${TEST_DATA.metaData.royaltyFriction}","fee_recipient":"${alice.toLowerCase()}"}`;
       });
@@ -470,7 +471,7 @@ contract("DixelClubV2NFT", function(accounts) {
     // MARK: - updateDescription(string memory description)
 
     it("updates description", async function() {
-      const collection = await createCollection(this.factory, deployer, { description: "abcd" });
+      const collection = await createCollection(this.factory, deployer, {}, "abcd");
       expect((await collection.metaData()).description_).to.equal("abcd");
 
       const newDescription = "ah ah whatever!!! 😉 hahah ha!";

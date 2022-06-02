@@ -11,6 +11,7 @@ const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.
 const TEST_DATA = {
   name: 'Test Collection',
   symbol: 'TESTNFT',
+  description: 'This is a test collection',
   metaData: {
     whitelistOnly: false,
     hidden: false,
@@ -18,7 +19,6 @@ const TEST_DATA = {
     royaltyFriction: 500, // 5%
     mintingBeginsFrom: 0, // start immediately
     mintingCost: ether("1"),
-    description: 'This is a test collection',
   }
 };
 
@@ -33,6 +33,7 @@ contract("DixelClubV2Factory", function(accounts) {
     this.testParams = [
       TEST_DATA.name,
       TEST_DATA.symbol,
+      TEST_DATA.description,
       Object.values(TEST_DATA.metaData),
       TEST_INPUT.palette,
       TEST_INPUT.pixels,
@@ -143,19 +144,19 @@ contract("DixelClubV2Factory", function(accounts) {
       await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CANNOT_BE_BLANK");
     });
     it("should check if maxSupply is over 0", async function() {
-      this.testParams[2][2] = 0;
+      this.testParams[3][2] = 0;
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
     });
     it("should check if maxSupply is less than the max value", async function() {
-      this.testParams[2][2] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
+      this.testParams[3][2] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_MAX_SUPPLY");
     });
     it("should check if royaltyFriction is less than the max value", async function() {
-      this.testParams[2][3] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
+      this.testParams[3][3] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_ROYALTY_FRICTION");
     });
     it("should check if description is over 1,000 characters", async function() {
-      this.testParams[2][6] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
+      this.testParams[2] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
       await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_TOO_LONG");
     });
     it("should check if symbol contains a quote", async function() {
@@ -163,12 +164,12 @@ contract("DixelClubV2Factory", function(accounts) {
       await expectRevert(this.factory.createCollection(...this.testParams), "SYMBOL_CONTAINS_MALICIOUS_CHARACTER");
     });
     it("should check if description contains a quote", async function() {
-      this.testParams[2][6] = 'what ever ""';
+      this.testParams[2] = 'what ever ""';
       await expectRevert(this.factory.createCollection(...this.testParams), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
     });
 
     it("should check if the correct creation fee has sent", async function() {
-      this.testParams[5].value = this.creationFee.sub(new BN("1"));
+      this.testParams[6].value = this.creationFee.sub(new BN("1"));
       await expectRevert(this.factory.createCollection(...this.testParams), "INVALID_CREATION_FEE_SENT");
     });
   });
@@ -242,7 +243,7 @@ contract("DixelClubV2Factory", function(accounts) {
         expect(this.metaData.mintingCost_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingCost));
       });
       it("description", async function() {
-        expect(this.metaData.description_).to.equal(TEST_DATA.metaData.description);
+        expect(this.metaData.description_).to.equal(TEST_DATA.description);
       });
       it("owner", async function() {
         expect(this.metaData.owner_).to.equal(alice);

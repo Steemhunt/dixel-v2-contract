@@ -47,20 +47,21 @@ contract DixelClubV2Factory is Constants, Ownable {
     function createCollection(
         string calldata name,
         string calldata symbol,
+        string calldata description,
         Shared.MetaData calldata metaData,
         uint24[PALETTE_SIZE] calldata palette,
         uint8[TOTAL_PIXEL_COUNT] calldata pixels
     ) external payable returns (address payable) {
         require(bytes(name).length > 0, "NAME_CANNOT_BE_BLANK");
         require(bytes(symbol).length > 0, "SYMBOL_CANNOT_BE_BLANK");
-        require(bytes(metaData.description).length <= 1000, "DESCRIPTION_TOO_LONG"); // ~900 gas per character
+        require(bytes(description).length <= 1000, "DESCRIPTION_TOO_LONG"); // ~900 gas per character
         require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, "INVALID_MAX_SUPPLY");
         require(metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, "INVALID_ROYALTY_FRICTION");
 
         // Validate `symbol`, `name` and `description` to ensure generateJSON() creates a valid JSON
         require(!StringUtils.contains(name, 0x22), "NAME_CONTAINS_MALICIOUS_CHARACTER");
         require(!StringUtils.contains(symbol, 0x22), "SYMBOL_CONTAINS_MALICIOUS_CHARACTER");
-        require(!StringUtils.contains(metaData.description, 0x22), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
+        require(!StringUtils.contains(description, 0x22), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
 
         if (creationFee > 0) {
             require(msg.value == creationFee, "INVALID_CREATION_FEE_SENT");
@@ -71,7 +72,7 @@ contract DixelClubV2Factory is Constants, Ownable {
 
         address payable nftAddress = _createClone(nftImplementation);
         DixelClubV2NFT newNFT = DixelClubV2NFT(nftAddress);
-        newNFT.init(msg.sender, name, symbol, metaData, palette, pixels);
+        newNFT.init(msg.sender, name, symbol, description, metaData, palette, pixels);
 
         collections.push(nftAddress);
 

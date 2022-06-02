@@ -45,6 +45,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     EditionData[] private _editionData; // Color (palette) data for each edition
     uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
     address[] private _whitelist;
+    string private _description;
 
     event Mint(address indexed to, uint256 indexed tokenId);
 
@@ -59,6 +60,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         address owner_,
         string calldata name_,
         string calldata symbol_,
+        string calldata description_,
         Shared.MetaData calldata metaData_,
         uint24[PALETTE_SIZE] calldata palette_,
         uint8[TOTAL_PIXEL_COUNT] calldata pixels_
@@ -71,6 +73,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         // ERC721 attributes
         _name = name_;
         _symbol = symbol_;
+        _description = description_;
 
         // Custom attributes
         _metaData = metaData_;
@@ -84,7 +87,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
 
     function mint(address to, uint24[PALETTE_SIZE] calldata palette) public payable {
-        uint256 mintingCost = _metaData.mintingCost;
+        uint256 mintingCost = uint256(_metaData.mintingCost);
 
         if(msg.value != mintingCost) revert DixelClubV2__InvalidCost(mintingCost, msg.value);
         if(_tokenIdTracker >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
@@ -243,7 +246,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     // MARK: - Update metadata
 
-    function updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint32 mintingBeginsFrom, uint256 mintingCost) external onlyOwner {
+    function updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint32 mintingBeginsFrom, uint168 mintingCost) external onlyOwner {
         if(royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2__InvalidRoyalty(royaltyFriction);
         if(_metaData.mintingBeginsFrom != mintingBeginsFrom && uint32(block.timestamp) > _metaData.mintingBeginsFrom) revert DixelClubV2__AlreadyStarted();
 
@@ -262,7 +265,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         if (bytes(description).length > 1000) revert DixelClubV2__DescriptionTooLong(); // ~900 gas per character
         if (StringUtils.contains(description, 0x22)) revert DixelClubV2__ContainMalicious();
 
-        _metaData.description = description;
+        _description = description;
     }
 
     // MARK: - External utility functions
@@ -280,7 +283,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
             '{"name":"',
             _symbol, ' #', ColorUtils.uint2str(tokenId),
             '","description":"',
-            _metaData.description,
+            _description,
             '","external_url":"https://dixel.club/collection/',
             ColorUtils.uint2str(block.chainid), '/', StringUtils.address2str(address(this)), '/', ColorUtils.uint2str(tokenId),
             '","image":"',
@@ -294,7 +297,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
             '{"name":"',
             _name,
             '","description":"',
-            _metaData.description,
+            _description,
             '","image":"',
             generateBase64SVG(0),
             '","external_link":"https://dixel.club/collection/',
@@ -327,7 +330,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         uint24 maxSupply_,
         uint24 royaltyFriction_,
         uint40 mintingBeginsFrom_,
-        uint256 mintingCost_,
+        uint168 mintingCost_,
         string memory description_,
         uint256 totalSupply_,
         address owner_,
@@ -341,7 +344,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         royaltyFriction_ = _metaData.royaltyFriction;
         mintingBeginsFrom_ = _metaData.mintingBeginsFrom;
         mintingCost_ = _metaData.mintingCost;
-        description_ = _metaData.description;
+        description_ = _description;
         totalSupply_ = totalSupply();
         owner_ = owner();
         pixels_ = _pixels;
