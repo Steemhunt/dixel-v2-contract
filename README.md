@@ -13,7 +13,10 @@ Pixel Art NFT factory that users can:
     - hidden (boolean, hide the collection from the main page listing of Dixel Club official website)
 2. Collectors: Mint a new edition on an existing collection with color variations
 
-[Testnet Demo](https://v2testnet.dixel.club/) - Available on Ethereum Goerli, Klayten Baobao, BNB Smart Chain testnets
+[🌏 Testnet Demo](https://v2testnet.dixel.club/) - Available on following testnets
+- Ethereum Goerli ([Faucet](https://goerli-faucet.mudit.blog/))
+- Klayten Baobao ([Faucet](https://baobab.wallet.klaytn.foundation/faucet))
+- BNB Smart Chain ([Faucet](https://testnet.binance.org/faucet-smart))
 
 ## Community Audit
 We are holding a community-based security audit with **$10,000 USDT bounty** and we're inviting all developer community!
