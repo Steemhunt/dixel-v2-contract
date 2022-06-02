@@ -18,9 +18,9 @@ contract DixelClubV2Factory is Constants, Ownable {
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
      */
-    address payable public nftImplementation;
+    address public nftImplementation;
 
-    address public beneficiary = address(0x82CA6d313BffE56E9096b16633dfD414148D66b1);
+    address payable public beneficiary = payable(0x82CA6d313BffE56E9096b16633dfD414148D66b1);
     uint256 public creationFee = 0.02 ether; // 0.02 ETH (~$50)
     uint256 public mintingFee = 500; // 5%;
 
@@ -30,7 +30,7 @@ contract DixelClubV2Factory is Constants, Ownable {
     event CollectionCreated(address indexed nftAddress, string name, string symbol);
 
     constructor() {
-        nftImplementation = payable(address(new DixelClubV2NFT()));
+        nftImplementation = address(new DixelClubV2NFT());
     }
 
     function _createClone(address target) private returns (address payable result) {
@@ -66,8 +66,7 @@ contract DixelClubV2Factory is Constants, Ownable {
             require(msg.value == creationFee, "INVALID_CREATION_FEE_SENT");
 
             // Send fee to the beneficiary
-            (bool sent, ) = beneficiary.call{ value: creationFee }("");
-            require(sent, "CREATION_FEE_TRANSFER_FAILED");
+            beneficiary.transfer(creationFee);
         }
 
         address payable nftAddress = _createClone(nftImplementation);
@@ -84,11 +83,11 @@ contract DixelClubV2Factory is Constants, Ownable {
     // MARK: Admin functions
 
     // This will update NFT contract implementaion and it won't affect existing collections
-    function updateImplementation(address payable newImplementation) external onlyOwner {
+    function updateImplementation(address newImplementation) external onlyOwner {
         nftImplementation = newImplementation;
     }
 
-    function updateBeneficiary(address newAddress, uint256 newCreationFee, uint256 newMintingFee) external onlyOwner {
+    function updateBeneficiary(address payable newAddress, uint256 newCreationFee, uint256 newMintingFee) external onlyOwner {
         require(newAddress != address(0), "BENEFICIARY_CANNOT_BE_NULL");
         require(newMintingFee <= FRICTION_BASE, "INVALID_FEE_FRICTION");
 
