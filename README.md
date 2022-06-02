@@ -9,8 +9,8 @@ Pixel Art NFT factory that users can:
     - minting cost - in native currency (ETH, BNB, KLAY) (95% goes to creator / 5% platform fee)
     - royalty (receiving address, percentage: 0 - 10%)
     - minting initiation time (unix timestamp)
-    - whitelistOnly (boolean)
-      - whitelist can be added by the creator later (wallet address, minting allowance)
+    - whitelistOnly (boolean, whitelist can be added by the creator later)
+    - hidden (boolean, hide the collection from the main page listing of Dixel Club official website)
 2. Collectors: Mint a new edition on an existing collection with color variations
 
 ## Community Audit
