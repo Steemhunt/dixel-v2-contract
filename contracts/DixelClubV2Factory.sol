@@ -23,6 +23,9 @@ contract DixelClubV2Factory is Constants, Ownable {
     error DixelClubV2Factory__SymbolContainedMalicious();
     error DixelClubV2Factory__DescriptionContainedMalicious();
     error DixelClubV2Factory__InvalidCreationFee();
+    error DixelClubV2Factory__ZeroAddress();
+    error DixelClubV2Factory__InvalidFee();
+
     /**
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
@@ -98,8 +101,8 @@ contract DixelClubV2Factory is Constants, Ownable {
     }
 
     function updateBeneficiary(address newAddress, uint256 newCreationFee, uint256 newMintingFee) external onlyOwner {
-        require(newAddress != address(0), "BENEFICIARY_CANNOT_BE_NULL");
-        require(newMintingFee <= FRICTION_BASE, "INVALID_FEE_FRICTION");
+        if(newAddress == address(0)) revert DixelClubV2Factory__ZeroAddress();
+        if(newMintingFee > FRICTION_BASE) revert DixelClubV2Factory__InvalidFee();
 
         beneficiary = newAddress;
         mintingFee = newMintingFee;
