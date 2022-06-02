@@ -92,7 +92,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         if (mintingCost > 0) {
             // Send fee to the beneficiary
-            uint256 fee = mintingCost * _factory.mintingFee() / FRICTION_BASE;
+            // Best to mutiple before you divide
+            uint256 fee = (mintingCost * _factory.mintingFee()) / FRICTION_BASE;
             (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
             require(sent, "FEE_TRANSFER_FAILED");
 
