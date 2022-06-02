@@ -45,11 +45,11 @@ contract DixelClubV2Factory is Constants, Ownable {
     }
 
     function createCollection(
-        string memory name,
-        string memory symbol,
-        Shared.MetaData memory metaData,
-        uint24[PALETTE_SIZE] memory palette,
-        uint8[TOTAL_PIXEL_COUNT] memory pixels
+        string calldata name,
+        string calldata symbol,
+        Shared.MetaData calldata metaData,
+        uint24[PALETTE_SIZE] calldata palette,
+        uint8[TOTAL_PIXEL_COUNT] calldata pixels
     ) external payable returns (address payable) {
         require(bytes(name).length > 0, "NAME_CANNOT_BE_BLANK");
         require(bytes(symbol).length > 0, "SYMBOL_CANNOT_BE_BLANK");
