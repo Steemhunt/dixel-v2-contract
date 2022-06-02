@@ -79,7 +79,8 @@ contract DixelClubV2Factory is Constants, Ownable {
             if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee(); 
 
             // Send fee to the beneficiary
-            beneficiary.transfer(creationFee);
+            (bool sent, ) = beneficiary.call{ value: creationFee }("");
+            require(sent);
         }
 
         address payable nftAddress = _createClone(nftImplementation);
