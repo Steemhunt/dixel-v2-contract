@@ -48,11 +48,11 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     function init(
         address owner_,
-        string memory name_,
-        string memory symbol_,
-        Shared.MetaData memory metaData_,
-        uint24[PALETTE_SIZE] memory palette_,
-        uint8[TOTAL_PIXEL_COUNT] memory pixels_
+        string calldata name_,
+        string calldata symbol_,
+        Shared.MetaData calldata metaData_,
+        uint24[PALETTE_SIZE] calldata palette_,
+        uint8[TOTAL_PIXEL_COUNT] calldata pixels_
     ) external {
         require(_initializedAt == 0, "CONTRACT_ALREADY_INITIALIZED");
         _initializedAt = uint40(block.timestamp);
@@ -74,7 +74,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         _mintNewEdition(owner_, palette_);
     }
 
-    function mint(address to, uint24[PALETTE_SIZE] memory palette) public payable {
+    function mint(address to, uint24[PALETTE_SIZE] calldata palette) public payable {
         uint256 mintingCost = _metaData.mintingCost;
 
         require(msg.value == mintingCost, "INVALID_MINTING_COST_SENT");
@@ -109,7 +109,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         _burn(tokenId);
     }
 
-    function _mintNewEdition(address to, uint24[PALETTE_SIZE] memory palette) private {
+    function _mintNewEdition(address to, uint24[PALETTE_SIZE] calldata palette) private {
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         uint256 tokenId;
@@ -141,7 +141,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     // @dev Maximum length of list array can be limited by block gas limit of blockchain
     // @notice Duplicated address input means multiple allowance
-    function addWhitelist(address[] memory list) external onlyOwner {
+    function addWhitelist(address[] calldata list) external onlyOwner {
         require(_metaData.whitelistOnly, "COLLECTION_IS_PUBLIC");
 
         uint256 length = list.length; // gas saving
@@ -169,7 +169,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
 
     // @dev Maximum length of list array can be limited by block gas limit of blockchain
-    function removeWhitelist(address[] memory list) external onlyOwner {
+    function removeWhitelist(address[] calldata list) external onlyOwner {
         require(_metaData.whitelistOnly, "COLLECTION_IS_PUBLIC");
 
         uint256 length = list.length; // gas saving
