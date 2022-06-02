@@ -336,7 +336,9 @@ abstract contract ERC721Initializable is Context, ERC165, IERC721, IERC721Metada
         _approve(address(0), tokenId);
 
         _balances[from] -= 1;
-        _balances[to] += 1;
+        unchecked {
+            _balances[to] += 1;
+        }
         _owners[tokenId] = to;
 
         emit Transfer(from, to, tokenId);
