@@ -21,12 +21,12 @@ abstract contract SVGGenerator is Constants {
     function _generateSVG(uint24[PALETTE_SIZE] memory palette, uint8[TOTAL_PIXEL_COUNT] memory pixels) internal pure returns (string memory) {
         string[PALETTE_SIZE] memory paths;
 
-        for (uint256 y = 0; y < CANVAS_SIZE; y++) {
+        for (uint256 y; y < CANVAS_SIZE;) {
             uint256 prev = pixels[y * CANVAS_SIZE]; // prev pixel color
             paths[prev] = string(abi.encodePacked(paths[prev], "M0 ", ColorUtils.uint2str(y)));
             uint256 width = 1;
 
-            for (uint256 x = 1; x < CANVAS_SIZE; x++) {
+            for (uint256 x = 1; x < CANVAS_SIZE; ) {
                 uint256 current = pixels[y * CANVAS_SIZE + x]; // current pixel color
 
                 if (prev == current) {
@@ -43,13 +43,23 @@ abstract contract SVGGenerator is Constants {
                 }
 
                 prev = current;
+
+                unchecked {
+                    ++x;
+                }
+            }
+            unchecked {
+                ++y;
             }
         }
 
         string memory joined;
-        for (uint256 i = 0; i < PALETTE_SIZE; i++) {
+        for (uint256 i; i < PALETTE_SIZE; ) {
             if (bytes(paths[i]).length > 0) {
                 joined = string(abi.encodePacked(joined, '<path stroke="#', ColorUtils.uint2hex(palette[i]), '" d="', paths[i], '"/>'));
+            }
+            unchecked {
+                ++i;
             }
         }
 
