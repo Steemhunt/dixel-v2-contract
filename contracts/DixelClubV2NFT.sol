@@ -145,18 +145,25 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         require(_metaData.whitelistOnly, "COLLECTION_IS_PUBLIC");
 
         uint256 length = list.length; // gas saving
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i; i < length; ) {
             _whitelist.push(list[i]);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _removeWhitelist(address wallet) private {
-        for (uint256 i = 0; i < _whitelist.length; i++) {
+        uint256 length = _whitelist.length;
+        for (uint256 i; i != length;) {
             if (_whitelist[i] == wallet) {
                 _whitelist[i] = _whitelist[_whitelist.length - 1]; // put the last element into the delete index
                 _whitelist.pop(); // delete the last element to decrease array length;
 
                 break; // delete the first matching one and stop
+            }
+            unchecked {
+                ++i;
             }
         }
     }
@@ -166,8 +173,11 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         require(_metaData.whitelistOnly, "COLLECTION_IS_PUBLIC");
 
         uint256 length = list.length; // gas saving
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i; i < length;) {
             _removeWhitelist(list[i]);
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -183,8 +193,11 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         }
 
         list = new address[](count);
-        for (uint256 i = 0; i < count; i++) {
+        for (uint256 i = 0; i != count;) {
             list[i] = _whitelist[offset + i];
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -194,9 +207,12 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     function getWhitelistAllowanceLeft(address wallet) external view returns (uint256 allowance) {
         uint256 length = _whitelist.length; // gas saving
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i; i != length; ) {
             if (_whitelist[i] == wallet) {
                 allowance++;
+            }
+            unchecked {
+                ++i;
             }
         }
 
@@ -205,9 +221,12 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     function isWhitelistWallet(address wallet) public view returns (bool) {
         uint256 length = _whitelist.length; // gas saving
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i; i != length; ) {
             if (_whitelist[i] == wallet) {
                 return true;
+            }
+            unchecked {
+                ++i;
             }
         }
 
