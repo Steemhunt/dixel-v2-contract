@@ -25,7 +25,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     uint256 private _tokenIdTracker;
     IDixelClubV2Factory private _factory;
 
-    uint40 private _initializedAt;
+    uint32 private _initializedAt;
 
     uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
     Shared.MetaData private _metaData; // Collection meta data
@@ -55,7 +55,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         uint8[TOTAL_PIXEL_COUNT] calldata pixels_
     ) external {
         require(_initializedAt == 0, "CONTRACT_ALREADY_INITIALIZED");
-        _initializedAt = uint40(block.timestamp);
+        _initializedAt = uint32(block.timestamp);
 
         _factory = IDixelClubV2Factory(msg.sender);
 
@@ -79,7 +79,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         require(msg.value == mintingCost, "INVALID_MINTING_COST_SENT");
         require(_tokenIdTracker < _metaData.maxSupply, "MAX_SUPPLY_REACHED");
-        require(block.timestamp >= _metaData.mintingBeginsFrom, "MINTING_NOT_STARTED_YET");
+        require(uint32(block.timestamp) >= _metaData.mintingBeginsFrom, "MINTING_NOT_STARTED_YET");
 
         // For whitelist only collections
         if (_metaData.whitelistOnly) {
@@ -236,9 +236,9 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     // MARK: - Update metadata
 
-    function updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint40 mintingBeginsFrom, uint256 mintingCost) external onlyOwner {
+    function updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint32 mintingBeginsFrom, uint256 mintingCost) external onlyOwner {
         require(royaltyFriction <= MAX_ROYALTY_FRACTION, "INVALID_ROYALTY_FRICTION");
-        require((_metaData.mintingBeginsFrom == mintingBeginsFrom || block.timestamp < _metaData.mintingBeginsFrom), "CANNOT_UPDATE_MITING_TIME_ONCE_STARTED");
+        require((_metaData.mintingBeginsFrom == mintingBeginsFrom || uint32(block.timestamp) < _metaData.mintingBeginsFrom), "CANNOT_UPDATE_MITING_TIME_ONCE_STARTED");
 
         _metaData.whitelistOnly = whitelistOnly;
         if (!_metaData.whitelistOnly) {
@@ -308,7 +308,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         return _exists(tokenId);
     }
 
-    function listData() external view returns (uint40 initializedAt_, bool hidden_) {
+    function listData() external view returns (uint32 initializedAt_, bool hidden_) {
         initializedAt_ = _initializedAt;
         hidden_ = _metaData.hidden;
     }
