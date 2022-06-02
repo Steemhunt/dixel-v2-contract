@@ -14,6 +14,15 @@ import "./DixelClubV2NFT.sol";
 * Create an ERC721 Dixel Club NFTs using proxy pattern to save gas
 */
 contract DixelClubV2Factory is Constants, Ownable {
+    error DixelClubV2Factory__BlankedName();
+    error DixelClubV2Factory__BlankedSymbol();
+    error DixelClubV2Factory__DescriptionTooLong();
+    error DixelClubV2Factory__InvalidMaxSupply();
+    error DixelClubV2Factory__InvalidRoyalty();
+    error DixelClubV2Factory__NameContainedMalicious();
+    error DixelClubV2Factory__SymbolContainedMalicious();
+    error DixelClubV2Factory__DescriptionContainedMalicious();
+    error DixelClubV2Factory__InvalidCreationFee();
     /**
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
@@ -51,19 +60,19 @@ contract DixelClubV2Factory is Constants, Ownable {
         uint24[PALETTE_SIZE] calldata palette,
         uint8[TOTAL_PIXEL_COUNT] calldata pixels
     ) external payable returns (address payable) {
-        require(bytes(name).length > 0, "NAME_CANNOT_BE_BLANK");
-        require(bytes(symbol).length > 0, "SYMBOL_CANNOT_BE_BLANK");
-        require(bytes(metaData.description).length <= 1000, "DESCRIPTION_TOO_LONG"); // ~900 gas per character
-        require(metaData.maxSupply > 0 && metaData.maxSupply <= MAX_SUPPLY, "INVALID_MAX_SUPPLY");
-        require(metaData.royaltyFriction <= MAX_ROYALTY_FRACTION, "INVALID_ROYALTY_FRICTION");
+        if(bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
+        if(bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();
+        if(bytes(metaData.description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
+        if(metaData.maxSupply == 0 || metaData.maxSupply > MAX_SUPPLY) revert DixelClubV2Factory__InvalidMaxSupply();
+        if(metaData.royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2Factory__InvalidRoyalty();
 
         // Validate `symbol`, `name` and `description` to ensure generateJSON() creates a valid JSON
-        require(!StringUtils.contains(name, 0x22), "NAME_CONTAINS_MALICIOUS_CHARACTER");
-        require(!StringUtils.contains(symbol, 0x22), "SYMBOL_CONTAINS_MALICIOUS_CHARACTER");
-        require(!StringUtils.contains(metaData.description, 0x22), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
+        if(StringUtils.contains(name, 0x22)) revert DixelClubV2Factory__NameContainedMalicious();
+        if(StringUtils.contains(symbol, 0x22)) revert DixelClubV2Factory__SymbolContainedMalicious();
+        if(StringUtils.contains(metaData.description, 0x22)) revert DixelClubV2Factory__DescriptionContainedMalicious();
 
         if (creationFee > 0) {
-            require(msg.value == creationFee, "INVALID_CREATION_FEE_SENT");
+            if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee(); 
 
             // Send fee to the beneficiary
             (bool sent, ) = beneficiary.call{ value: creationFee }("");
