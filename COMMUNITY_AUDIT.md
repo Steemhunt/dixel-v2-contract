@@ -17,4 +17,4 @@ If there is only 1 contributor, he/she will receive all the bounty. If there are
 
 Within the first PR or the issue, please write down the USDT wallet address you would like to receive the bounty. Please specify the chain as well (Ethereum, BNB Smart Chain, Solana, AVAX C-Chain, Polygon, Tron).
 
-+ We may create a NFT collection for dev contributors and all valid participants will be added to the whitelist
+﹢ We may create a NFT collection for dev contributors and all valid participants will be added to the whitelist 😉
