@@ -22,7 +22,9 @@ Pixel Art NFT factory that users can:
 We are holding a community-based security audit with **$10,000 USDT bounty** and we're inviting all developer community!
 If you're willing to participate, please read the instructions below:
 
-[Community Audit Guide](https://github.com/Steemhunt/dixel-v2-contract/blob/main/COMMUNITY_AUDIT.md)
+[🛠 Community Audit Guide](https://github.com/Steemhunt/dixel-v2-contract/blob/main/COMMUNITY_AUDIT.md)
+
+Contribution made by **12 June 2022** will be counted
 
 ## Run Tests
 ```bash
