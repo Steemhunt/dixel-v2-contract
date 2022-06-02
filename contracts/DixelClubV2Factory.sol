@@ -21,7 +21,7 @@ contract DixelClubV2Factory is Constants, Ownable {
     address payable public nftImplementation;
 
     address public beneficiary = address(0x82CA6d313BffE56E9096b16633dfD414148D66b1);
-    uint256 public creationFee = 2e16; // 0.02 ETH (~$50)
+    uint256 public creationFee = 0.02 ether; // 0.02 ETH (~$50)
     uint256 public mintingFee = 500; // 5%;
 
     // Array of all created nft collections
