@@ -3,7 +3,6 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "base64-sol/base64.sol";
@@ -22,9 +21,8 @@ import "./SVGGenerator.sol"; // inheriting Constants
  *  - token ID and URI autogeneration
  */
 contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
-    using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIdTracker;
+    uint256 private _tokenIdTracker;
     IDixelClubV2Factory private _factory;
 
     uint40 private _initializedAt;
@@ -80,7 +78,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         uint256 mintingCost = _metaData.mintingCost;
 
         require(msg.value == mintingCost, "INVALID_MINTING_COST_SENT");
-        require(_tokenIdTracker.current() < _metaData.maxSupply, "MAX_SUPPLY_REACHED");
+        require(_tokenIdTracker < _metaData.maxSupply, "MAX_SUPPLY_REACHED");
         require(block.timestamp >= _metaData.mintingBeginsFrom, "MINTING_NOT_STARTED_YET");
 
         // For whitelist only collections
@@ -114,13 +112,17 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     function _mintNewEdition(address to, uint24[PALETTE_SIZE] memory palette) private {
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
-        uint256 tokenId = _tokenIdTracker.current();
+        uint256 tokenId;
+        unchecked {
+            tokenId = _tokenIdTracker++;
+        }
+            
         _safeMint(to, tokenId);
 
         _editionData.push(EditionData(palette));
-        assert(tokenId == _editionData.length - 1);
-
-        _tokenIdTracker.increment();
+        unchecked {
+            assert(tokenId == _editionData.length - 1);
+        }
 
         emit Mint(to, tokenId);
     }
@@ -280,7 +282,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
 
     function nextTokenId() external view returns (uint256) {
-        return _tokenIdTracker.current();
+        return _tokenIdTracker;
     }
 
     function exists(uint256 tokenId) external view returns (bool) {
