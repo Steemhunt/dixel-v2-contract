@@ -37,9 +37,9 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         uint24[PALETTE_SIZE] palette; // 24bit color (16,777,216) - up to 16 colors
     }
 
-    struct PosAndC {
-        uint96 Position;
-        uint96 Count;
+    struct PositionCount {
+        uint96 position;
+        uint96 count;
         bool init;
         mapping(address => bool) hitted;
     }
@@ -48,7 +48,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     uint32 private _initializedAt;
     uint256 private _tokenIdTracker;
     Shared.MetaData private _metaData; // Collection meta data
-    mapping(address => PosAndC) private _whitelistData;
+    mapping(address => PositionCount) private _whitelistData;
     address[] private _whitelist;
     EditionData[] private _editionData; // Color (palette) data for each edition
     uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
@@ -164,18 +164,18 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         address curr; // gas saving
         for (uint256 i; i != length; ) {
             curr = list[i];
-            PosAndC storage pc = _whitelistData[curr];
+            PositionCount storage pc = _whitelistData[curr];
 
             if (!_whitelistData[address(0)].hitted[curr]) {
                 _whitelistData[address(0)].hitted[curr] = true;
                 _whitelist.push(curr);
                 unchecked {
-                    (pc.Position, pc.init) = (uint96(_whitelist.length) - 1, true);
+                    (pc.position, pc.init) = (uint96(_whitelist.length) - 1, true);
                 }
             }
 
             unchecked {
-                ++pc.Count;
+                ++pc.count;
                 ++i;
             }
         }
@@ -184,9 +184,9 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
 
     function _removeWhitelist(address wallet) private {
-        PosAndC storage pc = _whitelistData[wallet];
-        if (--pc.Count == 0 && pc.init == true) {
-            _whitelist[pc.Position] = _whitelist[_whitelist.length - 1];
+        PositionCount storage pc = _whitelistData[wallet];
+        if (--pc.count == 0 && pc.init == true) {
+            _whitelist[pc.position] = _whitelist[_whitelist.length - 1];
             _whitelist.pop();
             delete _whitelistData[wallet];
         }
@@ -220,7 +220,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         counts = new uint96[](count);
         for (uint256 i; i != count;) {
             list[i] = _whitelist[offset + i];
-            counts[i] = _whitelistData[list[i]].Count;
+            counts[i] = _whitelistData[list[i]].count;
 
             unchecked {
                 ++i;
@@ -233,7 +233,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     }
 
     function getWhitelistAllowanceLeft(address wallet) external view returns (uint256 allowance) {
-        allowance = _whitelistData[wallet].Count;
+        allowance = _whitelistData[wallet].count;
     }
 
     function isWhitelistWallet(address wallet) public view returns (bool) {
