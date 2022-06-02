@@ -7,7 +7,9 @@ If you're willing to participate, please read the instructions below.
 ## Instruction
 1. Clone or fork this repo (https://github.com/Steemhunt/dixel-v2-contract) and review the code
 2. Create a GitHub issue, PR, or extra test code - summarizing any improvements or vulnerabilities found
-3. Contribution made by 12 June 2022 will be counted
+3. Commenting / feedbacks on others' contributions will also be counted
+
+Contribution made by 12 June 2022 will be counted
 
 ## Bounty
 $10,000 USDT will be distributed on 13 June, proportional to the amount of contributions made.
