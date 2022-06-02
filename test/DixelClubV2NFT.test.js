@@ -57,7 +57,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
       await expectRevert(
         collection.init(alice, TEST_DATA.name, TEST_DATA.symbol, Object.values(TEST_DATA.metaData), TEST_INPUT.palette, TEST_INPUT.pixels),
-        "CONTRACT_ALREADY_INITIALIZED"
+        "DixelClubV2__Initalized"
       );
     });
 
@@ -69,7 +69,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
       await expectRevert(
         collection.mint(carol, TEST_INPUT.palette2, { from: carol }),
-        "MAX_SUPPLY_REACHED"
+        "DixelClubV2__MaximumMinted"
       );
     });
 
@@ -82,7 +82,7 @@ contract("DixelClubV2NFT", function(accounts) {
       expect(await collection.totalSupply()).to.be.bignumber.equal("1");
       await expectRevert(
         collection.mint(bob, TEST_INPUT.palette2, { from: bob }),
-        "MAX_SUPPLY_REACHED"
+        "DixelClubV2__MaximumMinted"
       );
     });
 
@@ -92,7 +92,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
       await expectRevert(
         collection.mint(bob, TEST_INPUT.palette2, { from: bob }),
-        "MINTING_NOT_STARTED_YET"
+        "DixelClubV2__NotStarted"
       );
     });
   }); // edge cases
@@ -104,8 +104,8 @@ contract("DixelClubV2NFT", function(accounts) {
     });
 
     it("should revert if sending an invalid minting fee", async function() {
-      await expectRevert(this.collection.mint(bob, TEST_INPUT.palette2, { from: bob }), "INVALID_MINTING_COST_SENT");
-      await expectRevert(this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: ether("0.9") }), "INVALID_MINTING_COST_SENT");
+      await expectRevert(this.collection.mint(bob, TEST_INPUT.palette2, { from: bob }), "DixelClubV2__InvalidCost");
+      await expectRevert(this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: ether("0.9") }), "DixelClubV2__InvalidCost");
     })
 
     it("should deduct minting cost from bob", async function() {
@@ -154,6 +154,14 @@ contract("DixelClubV2NFT", function(accounts) {
         expect(await this.collection.generateBase64SVG(1)).to.equal(this.base64Image);
       });
 
+      it("Generate SVG with Not Existance token", async function() {
+        await expectRevert(this.collection.generateSVG(2), 'DixelClubV2__NotExist');
+      });
+
+      it("Generate base64 encoded SVG with Not Existance token", async function() {
+        await expectRevert(this.collection.generateBase64SVG(2), 'DixelClubV2__NotExist');
+      });
+
       describe("generate tokenJSON and URI", function() {
         beforeEach(async function() {
           // NOTE: block.chainid returns 0 on hardhat network for some reason. We should check if it returns a correct value on mainnets.
@@ -167,6 +175,14 @@ contract("DixelClubV2NFT", function(accounts) {
 
         it("tokenURI", async function() {
           expect(await this.collection.tokenURI(1)).to.equal(`data:application/json;base64,${Buffer.from(this.json).toString('base64')}`);
+        });
+
+        it("Not Existance token for tokenURI", async function() {
+          await expectRevert(this.collection.tokenURI(2), 'DixelClubV2__NotExist');
+        });
+
+        it("Not Existance token for tokenJSON", async function() {
+          await expectRevert(this.collection.tokenJSON(2), 'DixelClubV2__NotExist');
         });
       });
     });
@@ -224,7 +240,7 @@ contract("DixelClubV2NFT", function(accounts) {
       it("should prevent non-owner to burn token", async function() {
         await expectRevert(
           this.collection.burn("1", { from: carol }),
-          "CALLER_IS_NOT_APPROVED"
+          "DixelClubV2__NotApproved"
         );
       });
 
@@ -334,7 +350,7 @@ contract("DixelClubV2NFT", function(accounts) {
       it("cannot mint more than allowance", async function() {
         await expectRevert(
           this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }),
-          "NOT_IN_WTHIELIST"
+          "DixelClubV2__NotWhitelisted"
         );
       });
 
@@ -365,7 +381,7 @@ contract("DixelClubV2NFT", function(accounts) {
       it("should not allow except whitelisted wallet to mint", async function() {
         await expectRevert(
           this.collection.mint(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),
-          "NOT_IN_WTHIELIST"
+          "DixelClubV2__NotWhitelisted"
         );
       });
 
@@ -388,7 +404,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
         await expectRevert(
           collection2.addWhitelist([bob], { from: alice }),
-          "COLLECTION_IS_PUBLIC"
+          "DixelClubV2__PublicCollection"
         );
       });
 
@@ -397,7 +413,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
         await expectRevert(
           collection2.removeWhitelist([bob], { from: alice }),
-          "COLLECTION_IS_PUBLIC"
+          "DixelClubV2__PublicCollection"
         );
       });
     }); // edge cases
@@ -478,24 +494,24 @@ contract("DixelClubV2NFT", function(accounts) {
         const invalidValue = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
         await expectRevert(
           this.collection.updateMetadata(false, false, invalidValue, "0", ether("1"), { from: alice }),
-          "INVALID_ROYALTY_FRICTION"
+          "DixelClubV2__InvalidRoyalty"
         );
       });
 
       it("checks if minting had already begun ", async function () {
         await expectRevert(
           this.collection.updateMetadata(false, false, "0", "1", ether("1"), { from: alice }),
-          "CANNOT_UPDATE_MITING_TIME_ONCE_STARTED"
+          "DixelClubV2__AlreadyStarted"
         );
       });
 
       it("should check if description is over 1,000 characters", async function() {
         const longDescription = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
-        await expectRevert(this.collection.updateDescription(longDescription, { from: alice }), "DESCRIPTION_TOO_LONG");
+        await expectRevert(this.collection.updateDescription(longDescription, { from: alice }), "DixelClubV2__DescriptionTooLong");
       });
 
       it("should check if description contains a quote", async function() {
-        await expectRevert(this.collection.updateDescription('hello "', { from: alice }), "DESCRIPTION_CONTAINS_MALICIOUS_CHARACTER");
+        await expectRevert(this.collection.updateDescription('hello "', { from: alice }), "DixelClubV2__ContainMalicious");
       });
     }); // edge case
   }); // update metadata
