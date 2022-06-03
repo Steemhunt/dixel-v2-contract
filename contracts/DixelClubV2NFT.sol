@@ -52,8 +52,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     event Mint(address indexed to, uint256 indexed tokenId);
     event Burn(uint256 indexed tokenId);
 
-    receive() external payable {}
-
     modifier checkTokenExists(uint256 tokenId) {
         if (!_exists(tokenId)) revert DixelClubV2__NotExist();
         _;
