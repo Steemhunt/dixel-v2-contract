@@ -119,12 +119,12 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         uint256 tokenId = _tokenIdTracker.current();
-        _safeMint(to, tokenId);
+        _tokenIdTracker.increment();
 
         _editionData.push(EditionData(palette));
         assert(tokenId == _editionData.length - 1);
 
-        _tokenIdTracker.increment();
+        _safeMint(to, tokenId);
 
         emit Mint(to, tokenId);
     }
