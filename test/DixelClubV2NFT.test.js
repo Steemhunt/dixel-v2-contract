@@ -1,4 +1,4 @@
-const { ether, balance, time, BN, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { ether, balance, time, BN, constants, expectEvent, expectRevert, send } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256, ZERO_ADDRESS } = constants;
 const { expect } = require("chai");
 const fs = require("fs");
@@ -44,6 +44,10 @@ contract("DixelClubV2NFT", function(accounts) {
   });
 
   describe("edge cases", function() {
+    it("should be revert to send native currency with nothing", async function() {
+      await expectRevert.unspecified(send.ether(deployer, this.impl.address, "1"));
+    });
+
     it("can mint a new edition for free if minting cost is 0", async function() {
       const collection = await createCollection(this.factory, alice, { mintingCost: 0 });
 

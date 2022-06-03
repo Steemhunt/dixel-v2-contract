@@ -63,7 +63,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         Shared.MetaData calldata metaData,
         uint24[PALETTE_SIZE] calldata palette,
         uint8[TOTAL_PIXEL_COUNT] calldata pixels
-    ) external payable returns (address payable) {
+    ) external payable returns (address) {
         if(bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
         if(bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();
         if(bytes(description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
@@ -83,7 +83,7 @@ contract DixelClubV2Factory is Constants, Ownable {
             require(sent);
         }
 
-        address payable nftAddress = _createClone(nftImplementation);
+        address nftAddress = _createClone(nftImplementation);
         IDixelClubV2NFT newNFT = IDixelClubV2NFT(nftAddress);
         newNFT.init(msg.sender, name, symbol, description, metaData, palette, pixels);
 
