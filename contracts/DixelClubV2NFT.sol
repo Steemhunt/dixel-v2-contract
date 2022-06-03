@@ -40,6 +40,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     address[] private _whitelist;
 
     event Mint(address indexed to, uint256 indexed tokenId);
+    event Burn(uint256 indexed tokenId);
 
     receive() external payable {}
 
@@ -110,6 +111,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
         delete _editionData[tokenId];
         _burn(tokenId);
+
+        emit Burn(tokenId);
     }
 
     function _mintNewEdition(address to, uint24[PALETTE_SIZE] memory palette) private {
