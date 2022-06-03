@@ -11,6 +11,7 @@ import "./lib/ColorUtils.sol";
 import "./lib/StringUtils.sol";
 import "./IDixelClubV2Factory.sol";
 import "./Shared.sol";
+import "./Constants.sol";
 import "./SVGGenerator.sol"; // inheriting Constants
 
 /**
@@ -20,7 +21,7 @@ import "./SVGGenerator.sol"; // inheriting Constants
  *  - a owner (Dixel contract) that allows for token minting (creation)
  *  - token ID and URI autogeneration
  */
-contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
+contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__NotExist();
     error DixelClubV2__Initalized();
     error DixelClubV2__InvalidCost(uint256 expected, uint256 actual);

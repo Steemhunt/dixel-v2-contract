@@ -38,7 +38,8 @@ contract("DixelClubV2NFT", function(accounts) {
   const [ deployer, alice, bob, carol ] = accounts;
 
   beforeEach(async function() {
-    this.factory = await DixelClubV2Factory.new();
+    this.impl = await DixelClubV2NFT.new();
+    this.factory = await DixelClubV2Factory.new(this.impl.address);
     this.mintingCost = TEST_DATA.metaData.mintingCost;
   });
 

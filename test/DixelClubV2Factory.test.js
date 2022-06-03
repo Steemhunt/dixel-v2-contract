@@ -26,7 +26,8 @@ contract("DixelClubV2Factory", function(accounts) {
   const [ deployer, alice, bob ] = accounts;
 
   beforeEach(async function() {
-    this.factory = await DixelClubV2Factory.new();
+    this.impl = await DixelClubV2NFT.new();
+    this.factory = await DixelClubV2Factory.new(this.impl.address);
     this.creationFee = await this.factory.creationFee();
     this.beneficiary = await this.factory.beneficiary();
 
@@ -50,9 +51,9 @@ contract("DixelClubV2Factory", function(accounts) {
       assert.notEqual(await this.factory.nftImplementation(), ZERO_ADDRESS);
     });
 
-    it("nft implementation should have its factory contract as original owner", async function() {
+    it("nft implementation should have its deployer as original owner", async function() {
       const nft = await DixelClubV2NFT.at(await this.factory.nftImplementation());
-      expect(await nft.owner()).to.equal(this.factory.address);
+      expect(await nft.owner()).to.equal(deployer);
     });
   });
 
