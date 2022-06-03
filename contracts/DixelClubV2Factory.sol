@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./lib/StringUtils.sol";
 import "./Constants.sol";
 import "./Shared.sol";
-import "./DixelClubV2NFT.sol";
+import "./IDixelClubV2NFT.sol";
 
 /**
 * @title Dixel Club (V2) NFT Factory
@@ -41,8 +41,8 @@ contract DixelClubV2Factory is Constants, Ownable {
 
     event CollectionCreated(address indexed nftAddress, string name, string symbol);
 
-    constructor() {
-        nftImplementation = address(new DixelClubV2NFT());
+    constructor(address DixelClubV2NFTImpl) {
+        nftImplementation = DixelClubV2NFTImpl;
     }
 
     function _createClone(address target) private returns (address payable result) {
@@ -84,7 +84,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         }
 
         address payable nftAddress = _createClone(nftImplementation);
-        DixelClubV2NFT newNFT = DixelClubV2NFT(nftAddress);
+        IDixelClubV2NFT newNFT = IDixelClubV2NFT(nftAddress);
         newNFT.init(msg.sender, name, symbol, description, metaData, palette, pixels);
 
         collections.push(nftAddress);
