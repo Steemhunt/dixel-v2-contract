@@ -21,20 +21,17 @@ import "./SVGGenerator.sol"; // inheriting Constants
  *  - token ID and URI autogeneration
  */
 contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
-
-    uint256 private _tokenIdTracker;
-    IDixelClubV2Factory private _factory;
-
-    uint40 private _initializedAt;
-
-    uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
-    Shared.MetaData private _metaData; // Collection meta data
-
     struct EditionData {
         uint24[PALETTE_SIZE] palette; // 24bit color (16,777,216) - up to 16 colors
     }
-    EditionData[] private _editionData; // Color (palette) data for each edition
 
+    IDixelClubV2Factory private _factory;
+    uint40 private _initializedAt;
+    Shared.MetaData private _metaData; // Collection meta data
+    uint256 private _tokenIdTracker;
+
+    EditionData[] private _editionData; // Color (palette) data for each edition
+    uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
     address[] private _whitelist;
 
     event Mint(address indexed to, uint256 indexed tokenId);
