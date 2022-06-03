@@ -56,6 +56,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     string private _description;
 
     event Mint(address indexed to, uint256 indexed tokenId);
+    event Burn(uint256 indexed tokenId);
 
     modifier checkTokenExists(uint256 tokenId) {
         if (!_exists(tokenId)) revert DixelClubV2__NotExist();
@@ -104,10 +105,10 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
         if (mintingCost > 0) {
             // Send fee to the beneficiary
-            uint256 fee = mintingCost * _factory.mintingFee() / FRICTION_BASE;
+            uint256 fee = (mintingCost * _factory.mintingFee()) / FRICTION_BASE;
+            (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
+            require(sent, "FEE_TRANSFER_FAILED");
 
-            (bool sent, ) = _factory.beneficiary().call{ value: fee }("");
-            require(sent);
 
             // Send the rest of minting cost to the collection creator
             (sent, ) = owner().call{ value: mintingCost - fee }("");
@@ -122,6 +123,8 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
         delete _editionData[tokenId];
         _burn(tokenId);
+
+        emit Burn(tokenId);
     }
 
     function _mintNewEdition(address to, uint24[PALETTE_SIZE] calldata palette) private {
@@ -131,13 +134,13 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         unchecked {
             tokenId = _tokenIdTracker++;
         }
-            
-        _safeMint(to, tokenId);
 
         _editionData.push(EditionData(palette));
         unchecked {
             assert(tokenId == _editionData.length - 1);
         }
+        
+        _safeMint(to, tokenId);
 
         emit Mint(to, tokenId);
     }
