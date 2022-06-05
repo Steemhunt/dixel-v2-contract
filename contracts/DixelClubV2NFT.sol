@@ -246,7 +246,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
     function updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint40 mintingBeginsFrom, uint152 mintingCost) external onlyOwner {
         if(royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2__InvalidRoyalty(royaltyFriction);
-        if(_metaData.mintingBeginsFrom != mintingBeginsFrom && uint40(block.timestamp) > _metaData.mintingBeginsFrom) revert DixelClubV2__AlreadyStarted();
+        if(_metaData.mintingBeginsFrom != mintingBeginsFrom && uint40(block.timestamp) >= _metaData.mintingBeginsFrom) revert DixelClubV2__AlreadyStarted();
 
         _metaData.whitelistOnly = whitelistOnly;
         if (!_metaData.whitelistOnly) {
