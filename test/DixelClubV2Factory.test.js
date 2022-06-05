@@ -7,20 +7,7 @@ const DixelClubV2Factory = artifacts.require("DixelClubV2Factory");
 const DixelClubV2NFT = artifacts.require("DixelClubV2NFT");
 const DixelClubV2NFTMock = artifacts.require("DixelClubV2NFTMock");
 
-const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.json`, 'utf8'));
-const TEST_DATA = {
-  name: 'Test Collection',
-  symbol: 'TESTNFT',
-  description: 'This is a test collection',
-  metaData: {
-    whitelistOnly: false,
-    hidden: false,
-    maxSupply: 10,
-    royaltyFriction: 500, // 5%
-    mintingBeginsFrom: 0, // start immediately
-    mintingCost: ether("1"),
-  }
-};
+const { TEST_INPUT, TEST_DATA } = require("./helpers/DataHelpers");
 
 contract("DixelClubV2Factory", function(accounts) {
   const [ deployer, alice, bob ] = accounts;
