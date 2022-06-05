@@ -18,16 +18,23 @@ abstract contract SVGGenerator is Constants {
     string private constant HEADER = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 24 24" shape-rendering="crispEdges">';
     string private constant FOOTER = '</svg>';
 
-    function _generateSVG(uint24[PALETTE_SIZE] memory palette, uint8[TOTAL_PIXEL_COUNT] memory pixels) internal pure returns (string memory) {
+    function _generateSVG(uint24[PALETTE_SIZE] memory palette, uint8[PIXEL_ARRAY_SIZE] memory pixels) internal pure returns (string memory) {
         string[PALETTE_SIZE] memory paths;
 
         for (uint256 y; y < CANVAS_SIZE;) {
-            uint256 prev = pixels[y * CANVAS_SIZE]; // prev pixel color
+            uint256 prev = pixels[y * CANVAS_SIZE / 2] & 15; // prev pixel color. see comment below. x=0 so no shifting needed.
             paths[prev] = string(abi.encodePacked(paths[prev], "M0 ", ColorUtils.uint2str(y)));
             uint256 width = 1;
 
             for (uint256 x = 1; x < CANVAS_SIZE; ) {
-                uint256 current = pixels[y * CANVAS_SIZE + x]; // current pixel color
+                /*
+                    Pixels array: we're packing 2 pixels into each uint8.
+                    So pixels[y * CANVAS_SIZE/2 + x/2] contains pixels (x,y) and (x+1,y).
+                    The 4 rightmost bits are (x,y), so to extract that value we mask pixels[y * CANVAS_SIZE/2 + x/2] with 15 ("00001111").
+                    The 4 leftmost bits are (x+1,y), so to extract that value we shift pixels[y * CANVAS_SIZE/2 + x/2]
+                        4 places to the right, and then mask it with 15 ("00001111").
+                 */
+                uint256 current = (pixels[y * CANVAS_SIZE/2 + x/2] >> (4*(x%2))) & 15; // current pixel color.
 
                 if (prev == current) {
                     width++;
@@ -94,7 +101,7 @@ abstract contract SVGGenerator is Constants {
     }
     */
 
-    function _generateBase64SVG(uint24[PALETTE_SIZE] memory palette, uint8[TOTAL_PIXEL_COUNT] memory pixels) internal pure returns (string memory) {
+    function _generateBase64SVG(uint24[PALETTE_SIZE] memory palette, uint8[PIXEL_ARRAY_SIZE] memory pixels) internal pure returns (string memory) {
         return string(abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(bytes(_generateSVG(palette, pixels)))));
     }
 }
