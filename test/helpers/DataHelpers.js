@@ -29,8 +29,17 @@ async function createCollection(factory, nft, creator, customMetaData = {}, cust
   return await nft.at(receipt.logs[1].args.nftAddress);
 }
 
+function generateRandomAddress() {
+  return '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+}
+
+function generateRandomAddresses(count) {
+  return [...Array(count)].map(() => generateRandomAddress());
+}
+
 module.exports = {
   TEST_INPUT,
   TEST_DATA,
-  createCollection
+  createCollection,
+  generateRandomAddresses
 };
