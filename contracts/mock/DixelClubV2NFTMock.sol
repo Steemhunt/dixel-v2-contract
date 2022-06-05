@@ -34,11 +34,6 @@ contract DixelClubV2NFTMock is DixelClubV2NFT {
             _removeWhitelist_SimpleArray(list[i]);
         }
     }
-    // NOTE: Hacky method suggested by @assafom - https://github.com/Steemhunt/dixel-v2-contract/issues/8
-    function removeWhitelist_SimpleArray_ByIndex(uint256 index) external onlyOwner {
-        _whitelist1[index] = _whitelist1[_whitelist1.length - 1];
-        _whitelist1.pop();
-    }
     function getWhitelistCount_SimpleArray() external view returns (uint256) {
         return _whitelist1.length;
     }

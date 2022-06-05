@@ -30,10 +30,12 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__NotWhitelisted();
     error DixelClubV2__NotApproved();
     error DixelClubV2__PublicCollection();
+    error DixelClubV2__PrivateCollection();
     error DixelClubV2__InvalidRoyalty(uint256 invalid);
     error DixelClubV2__AlreadyStarted();
     error DixelClubV2__DescriptionTooLong();
     error DixelClubV2__ContainMalicious();
+    error DixelClubV2__WhiteListValueDoNotMatch(address expected, address actual);
 
     struct EditionData {
         uint24[PALETTE_SIZE] palette; // 24bit color (16,777,216) - up to 16 colors
@@ -87,23 +89,29 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         _mintNewEdition(owner_, palette_);
     }
 
-    function mint(address to, uint24[PALETTE_SIZE] calldata palette) public payable {
+    function mintPublic(address to, uint24[PALETTE_SIZE] calldata palette) external payable {
+        if(_metaData.whitelistOnly) revert DixelClubV2__PrivateCollection();
+
+        _mintWithFees(to, palette);
+    }
+
+    function mintPrivate(uint256 whitelistIndex, address to, uint24[PALETTE_SIZE] calldata palette) external payable {
+        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+
+        _removeWhitelist(whitelistIndex, msg.sender);
+
+        _mintWithFees(to, palette);
+    }
+
+    function _mintWithFees(address to, uint24[PALETTE_SIZE] calldata palette) private {
         uint256 mintingCost = uint256(_metaData.mintingCost);
 
         if(msg.value != mintingCost) revert DixelClubV2__InvalidCost(mintingCost, msg.value);
         if(_tokenIdTracker >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
         if(uint40(block.timestamp) < _metaData.mintingBeginsFrom) revert DixelClubV2__NotStarted(_metaData.mintingBeginsFrom, uint40(block.timestamp));
 
-        // For whitelist only collections
-        if (_metaData.whitelistOnly) {
-            if(!isWhitelistWallet(msg.sender)) revert DixelClubV2__NotWhitelisted();
-
-            _removeWhitelist(msg.sender); // decrease allowance by 1
-        }
-
         if (mintingCost > 0) {
             // Send fee to the beneficiary
-            // Best to mutiple before you divide
             uint256 fee = (mintingCost * _factory.mintingFee()) / FRICTION_BASE;
             (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
             require(sent, "FEE_TRANSFER_FAILED");
@@ -114,15 +122,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         }
 
         _mintNewEdition(to, palette);
-    }
-
-    function burn(uint256 tokenId) external {
-        if(!_isApprovedOrOwner(msg.sender, tokenId)) revert DixelClubV2__NotApproved(); // This will check existence of token
-
-        delete _editionData[tokenId];
-        _burn(tokenId);
-
-        emit Burn(tokenId);
     }
 
     function _mintNewEdition(address to, uint24[PALETTE_SIZE] calldata palette) private {
@@ -143,6 +142,15 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         emit Mint(to, tokenId);
     }
 
+    function burn(uint256 tokenId) external {
+        if(!_isApprovedOrOwner(msg.sender, tokenId)) revert DixelClubV2__NotApproved(); // This will check existence of token
+
+        delete _editionData[tokenId];
+        _burn(tokenId);
+
+        emit Burn(tokenId);
+    }
+
     function tokenURI(uint256 tokenId) public view override checkTokenExists(tokenId) returns (string memory) {
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(tokenJSON(tokenId)))));
     }
@@ -155,7 +163,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
     // MARK: - Whitelist related functions
 
-    // @dev Maximum length of list array can be limited by block gas limit of blockchain
+    // @dev Maximum length of list parameter can be limited by block gas limit of blockchain
     // @notice Duplicated address input means multiple allowance
     function addWhitelist(address[] calldata list) external onlyOwner {
         if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
@@ -169,32 +177,16 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         }
     }
 
-    function _removeWhitelist(address wallet) private {
-        uint256 length = _whitelist.length;
-        for (uint256 i; i != length;) {
-            if (_whitelist[i] == wallet) {
-                _whitelist[i] = _whitelist[length - 1]; // put the last element into the delete index
-                _whitelist.pop(); // delete the last element to decrease array length;
+    function _removeWhitelist(uint256 index, address value) private {
+        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+        if (_whitelist[index] != value) revert DixelClubV2__WhiteListValueDoNotMatch(value, _whitelist[index]);
 
-                break; // delete the first matching one and stop
-            }
-            unchecked {
-                ++i;
-            }
-        }
+        _whitelist[index] = _whitelist[_whitelist.length - 1]; // put the last element into the delete index
+        _whitelist.pop(); // delete the last element to decrease array length;
     }
 
-    // @dev Maximum length of list array can be limited by block gas limit of blockchain
-    function removeWhitelist(address[] calldata list) external onlyOwner {
-        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
-
-        uint256 length = list.length; // gas saving
-        for (uint256 i; i < length;) {
-            _removeWhitelist(list[i]);
-            unchecked {
-                ++i;
-            }
-        }
+    function removeWhitelist(uint256 index, address value) external onlyOwner {
+        _removeWhitelist(index, value);
     }
 
     // @dev offset & limit for pagination
@@ -235,18 +227,18 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         return allowance;
     }
 
-    function isWhitelistWallet(address wallet) public view returns (bool) {
+    function getWhitelistIndex(address wallet) external view returns (uint256) {
         uint256 length = _whitelist.length; // gas saving
         for (uint256 i; i != length; ) {
             if (_whitelist[i] == wallet) {
-                return true;
+                return i;
             }
             unchecked {
                 ++i;
             }
         }
 
-        return false;
+        revert DixelClubV2__NotWhitelisted();
     }
 
 

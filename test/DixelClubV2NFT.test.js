@@ -26,7 +26,7 @@ contract("DixelClubV2NFT", function(accounts) {
       const collection = await createCollection(this.factory, DixelClubV2NFT, alice, { mintingCost: 0 });
 
       const tracker = await balance.tracker(bob, 'wei');
-      await collection.mint(bob, TEST_INPUT.palette2, { from: bob });
+      await collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob });
       const { delta, fees } = await tracker.deltaWithFees();
 
       expect(delta.add(fees)).to.be.bignumber.equal("0");
@@ -44,24 +44,24 @@ contract("DixelClubV2NFT", function(accounts) {
     it("cannot mint over maxSupply", async function() {
       // Edition #0 is already minted on createCollection
       const collection = await createCollection(this.factory, DixelClubV2NFT, alice, { maxSupply: 3, mintingCost: 0 }); // count: 1
-      await collection.mint(alice, TEST_INPUT.palette2, { from: alice }); // count: 2
-      await collection.mint(bob, TEST_INPUT.palette2, { from: bob }); // count: 3
+      await collection.mintPublic(alice, TEST_INPUT.palette2, { from: alice }); // count: 2
+      await collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob }); // count: 3
 
       await expectRevert(
-        collection.mint(carol, TEST_INPUT.palette2, { from: carol }),
+        collection.mintPublic(carol, TEST_INPUT.palette2, { from: carol }),
         "DixelClubV2__MaximumMinted"
       );
     });
 
     it("cannot mint (maxSupply - 1)th edition even if someone burned a token", async function() {
       const collection = await createCollection(this.factory, DixelClubV2NFT, alice, { maxSupply: 2, mintingCost: 0 }); // edition: 0
-      await collection.mint(alice, TEST_INPUT.palette2, { from: alice }); // edition: 1
+      await collection.mintPublic(alice, TEST_INPUT.palette2, { from: alice }); // edition: 1
 
       await collection.burn("1", { from: alice });
 
       expect(await collection.totalSupply()).to.be.bignumber.equal("1");
       await expectRevert(
-        collection.mint(bob, TEST_INPUT.palette2, { from: bob }),
+        collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob }),
         "DixelClubV2__MaximumMinted"
       );
     });
@@ -71,7 +71,7 @@ contract("DixelClubV2NFT", function(accounts) {
       const collection = await createCollection(this.factory, DixelClubV2NFT, alice, { mintingCost: 0, mintingBeginsFrom: now + 1000 });
 
       await expectRevert(
-        collection.mint(bob, TEST_INPUT.palette2, { from: bob }),
+        collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob }),
         "DixelClubV2__NotStarted"
       );
     });
@@ -84,13 +84,13 @@ contract("DixelClubV2NFT", function(accounts) {
     });
 
     it("should revert if sending an invalid minting fee", async function() {
-      await expectRevert(this.collection.mint(bob, TEST_INPUT.palette2, { from: bob }), "DixelClubV2__InvalidCost");
-      await expectRevert(this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: ether("0.9") }), "DixelClubV2__InvalidCost");
+      await expectRevert(this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob }), "DixelClubV2__InvalidCost");
+      await expectRevert(this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: ether("0.9") }), "DixelClubV2__InvalidCost");
     })
 
     it("should deduct minting cost from bob", async function() {
       const tracker = await balance.tracker(bob, 'wei');
-      await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
       const { delta, fees } = await tracker.deltaWithFees();
 
       expect(delta.mul(new BN(-1)).sub(fees)).to.be.bignumber.equal(this.mintingCost);
@@ -98,7 +98,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
     it("should send minting cost to the collection owner (alice) after deducting minting fee", async function() {
       const tracker = await balance.tracker(alice, 'wei');
-      await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
       const delta = await tracker.delta();
 
       expect(delta).to.be.bignumber.equal(this.mintingCost.sub(this.mintingFee));
@@ -106,7 +106,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
     it("should send minting fee to the beneficiary", async function() {
       const tracker = await balance.tracker(await this.factory.beneficiary(), 'wei');
-      await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
       const delta = await tracker.delta();
 
       expect(delta).to.be.bignumber.equal(this.mintingFee);
@@ -121,7 +121,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
     describe("generate SVG and base64 encoded image", function() {
       beforeEach(async function() {
-        await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+        await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
         this.svg = fs.readFileSync(`${__dirname}/fixtures/test-svg2.svg`, 'utf8');
         this.base64Image = `data:image/svg+xml;base64,${Buffer.from(this.svg).toString('base64')}`;
       });
@@ -190,7 +190,7 @@ contract("DixelClubV2NFT", function(accounts) {
   describe("burn", function() {
     beforeEach(async function() {
       this.collection = await createCollection(this.factory, DixelClubV2NFT, alice);
-      await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // mint #1
+      await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // mint #1
     });
 
     it("initial states", async function() {
@@ -232,7 +232,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
       it("should allow non-owner to burn token once setApprovalForAll", async function() {
         await this.collection.setApprovalForAll(carol, true, { from: bob });
-        await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // mint #2
+        await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // mint #2
         expect(await this.collection.totalSupply()).to.be.bignumber.equal("3");
 
         await this.collection.burn("1", { from: carol });
@@ -257,12 +257,12 @@ contract("DixelClubV2NFT", function(accounts) {
       });
 
       it("should have alice in whitelist", async function() {
-        expect(await this.collection.isWhitelistWallet(alice)).to.equal(true);
+        expect(await this.collection.getWhitelistIndex(alice)).to.be.bignumber.equal("0");
         expect(await this.collection.getWhitelistAllowanceLeft(alice)).to.be.bignumber.equal("1");
       });
 
       it("should have bob in whitelist", async function() {
-        expect(await this.collection.isWhitelistWallet(bob)).to.equal(true);
+        expect(await this.collection.getWhitelistIndex(bob)).to.be.bignumber.equal("1");
         expect(await this.collection.getWhitelistAllowanceLeft(bob)).to.be.bignumber.equal("1");
       });
 
@@ -307,31 +307,23 @@ contract("DixelClubV2NFT", function(accounts) {
       });
 
       it("should remove a whitelist correctly", async function() {
-        await this.collection.removeWhitelist([alice], { from: alice }); // b, b, c, a
-        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([bob, bob, carol, alice]);
-      });
-
-      it("should remove multiple whitelists correctly", async function() {
-        await this.collection.removeWhitelist([alice, carol], { from: alice }); // b, b, c, a -> b, b, a
+        await this.collection.removeWhitelist(0, alice, { from: alice }); // b, b, c, a
+        await this.collection.removeWhitelist(2, carol, { from: alice }); // b, b, a
         expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([bob, bob, alice]);
       });
 
-      it("should skip if a list item doesn't exsit on the whitelist", async function() {
-        await this.collection.removeWhitelist([deployer, carol], { from: alice }); // a, b, b, a
-        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([alice, bob, bob, alice]);
+      it("should revert if index and value doesn't match", async function() {
+        await expectRevert(
+          this.collection.removeWhitelist(0, bob, { from: alice }),
+          "DixelClubV2__WhiteListValueDoNotMatch"
+        );
       });
     }); // remove whitelist
 
     describe("after minting", async function() {
       beforeEach(async function() {
-        await this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
-      });
-
-      it("cannot mint more than allowance", async function() {
-        await expectRevert(
-          this.collection.mint(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }),
-          "DixelClubV2__NotWhitelisted"
-        );
+        // whitelist: [alice, bob]
+        await this.collection.mintPrivate(1, bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
       });
 
       it("should decrease the allowance after minting", async function() {
@@ -353,15 +345,15 @@ contract("DixelClubV2NFT", function(accounts) {
 
       it("removeWhitelist can be only called by the owner of the collection", async function() {
         await expectRevert(
-          this.collection.removeWhitelist([bob], { from: bob }),
+          this.collection.removeWhitelist(1, bob, { from: bob }),
           "Ownable: caller is not the owner"
         );
       });
 
-      it("should not allow except whitelisted wallet to mint", async function() {
+      it("should not allow using mintPublic method", async function() {
         await expectRevert(
-          this.collection.mint(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),
-          "DixelClubV2__NotWhitelisted"
+          this.collection.mintPublic(carol, TEST_INPUT.palette2, { from: carol, value: this.mintingCost }),
+          "DixelClubV2__PrivateCollection"
         );
       });
 
@@ -392,7 +384,7 @@ contract("DixelClubV2NFT", function(accounts) {
         const collection2 = await createCollection(this.factory, DixelClubV2NFT, alice);
 
         await expectRevert(
-          collection2.removeWhitelist([bob], { from: alice }),
+          collection2.removeWhitelist(1, bob, { from: alice }),
           "DixelClubV2__PublicCollection"
         );
       });
