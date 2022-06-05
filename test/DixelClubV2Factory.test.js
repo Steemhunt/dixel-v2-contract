@@ -225,7 +225,8 @@ contract("DixelClubV2Factory", function(accounts) {
         expect(this.metaData.royaltyFriction_).to.be.bignumber.equal(String(TEST_DATA.metaData.royaltyFriction));
       });
       it("mintingBeginsFrom", async function() {
-        expect(this.metaData.mintingBeginsFrom_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingBeginsFrom));
+        const now = await time.latest();
+        expect(this.metaData.mintingBeginsFrom_).to.be.bignumber.lte(now); // will be set to the current time if "0"
       });
       it("mintingCost", async function() {
         expect(this.metaData.mintingCost_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingCost));

@@ -399,7 +399,7 @@ contract("DixelClubV2NFT", function(accounts) {
       await collection.addWhitelist([alice, bob]);
       expect(await collection.getWhitelistCount()).to.be.bignumber.equal("2"); // initial check
 
-      await collection.updateMetadata(false, false, "500", "0", "0");
+      await collection.updateMetadata(false, false, "500", (await collection.metaData()).mintingBeginsFrom_, "0");
 
       const metaData = await collection.metaData();
       expect(metaData.whitelistOnly_).to.equal(false);
@@ -410,7 +410,7 @@ contract("DixelClubV2NFT", function(accounts) {
       const collection = await createCollection(this.factory, DixelClubV2NFT, deployer, { hidden: true });
       expect((await collection.listData()).hidden_).to.equal(true);
 
-      await collection.updateMetadata(false, false, "500", "0", "0");
+      await collection.updateMetadata(false, false, "500", (await collection.metaData()).mintingBeginsFrom_, "0");
       expect((await collection.listData()).hidden_).to.equal(false);
     });
 
@@ -418,7 +418,7 @@ contract("DixelClubV2NFT", function(accounts) {
       const collection = await createCollection(this.factory, DixelClubV2NFT, deployer, { royaltyFriction: "100" });
       expect((await collection.metaData()).royaltyFriction_).to.be.bignumber.equal("100");
 
-      await collection.updateMetadata(false, false, "200", "0", "0");
+      await collection.updateMetadata(false, false, "200", (await collection.metaData()).mintingBeginsFrom_, "0");
       expect((await collection.metaData()).royaltyFriction_).to.be.bignumber.equal("200");
     });
 
@@ -435,7 +435,7 @@ contract("DixelClubV2NFT", function(accounts) {
       const collection = await createCollection(this.factory, DixelClubV2NFT, deployer, { mintingCost: ether("2") });
       expect((await collection.metaData()).mintingCost_).to.be.bignumber.equal(ether("2"));
 
-      await collection.updateMetadata(false, false, "200", "0", ether("3"));
+      await collection.updateMetadata(false, false, "200", (await collection.metaData()).mintingBeginsFrom_, ether("3"));
       expect((await collection.metaData()).mintingCost_).to.be.bignumber.equal(ether("3"));
     });
 
@@ -457,7 +457,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
       it("should not allow non-owner can update metadata", async function() {
         await expectRevert(
-          this.collection.updateMetadata(false, false, "500", "0", ether("1"), { from: bob }),
+          this.collection.updateMetadata(false, false, "500", (await this.collection.metaData()).mintingBeginsFrom_, ether("1"), { from: bob }),
           "Ownable: caller is not the owner"
         );
       });
@@ -465,14 +465,14 @@ contract("DixelClubV2NFT", function(accounts) {
       it("checks royalty friction range", async function () {
         const invalidValue = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
         await expectRevert(
-          this.collection.updateMetadata(false, false, invalidValue, "0", ether("1"), { from: alice }),
+          this.collection.updateMetadata(false, false, invalidValue, (await this.collection.metaData()).mintingBeginsFrom_, ether("1"), { from: alice }),
           "DixelClubV2__InvalidRoyalty"
         );
       });
 
       it("checks if minting had already begun ", async function () {
         await expectRevert(
-          this.collection.updateMetadata(false, false, "0", "1", ether("1"), { from: alice }),
+          this.collection.updateMetadata(false, false, "0", (await this.collection.metaData()).mintingBeginsFrom_.add(new BN("100")), ether("1"), { from: alice }),
           "DixelClubV2__AlreadyStarted"
         );
       });

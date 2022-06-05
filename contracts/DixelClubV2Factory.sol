@@ -60,7 +60,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         string calldata name,
         string calldata symbol,
         string calldata description,
-        Shared.MetaData calldata metaData,
+        Shared.MetaData memory metaData,
         uint24[PALETTE_SIZE] calldata palette,
         uint8[TOTAL_PIXEL_COUNT] calldata pixels
     ) external payable returns (address) {
@@ -74,6 +74,11 @@ contract DixelClubV2Factory is Constants, Ownable {
         if(StringUtils.contains(name, 0x22)) revert DixelClubV2Factory__NameContainedMalicious();
         if(StringUtils.contains(symbol, 0x22)) revert DixelClubV2Factory__SymbolContainedMalicious();
         if(StringUtils.contains(description, 0x22)) revert DixelClubV2Factory__DescriptionContainedMalicious();
+
+        // Neutralize minting starts date for future reference
+        if (metaData.mintingBeginsFrom < block.timestamp) {
+            metaData.mintingBeginsFrom = uint40(block.timestamp);
+        }
 
         if (creationFee > 0) {
             if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
