@@ -427,8 +427,21 @@ contract("DixelClubV2NFT", function(accounts) {
       const collection = await createCollection(this.factory, DixelClubV2NFT, deployer, { mintingBeginsFrom: later });
       expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.equal(later);
 
-      await collection.updateMetadata(false, false, "500", "1", "0");
-      expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.equal("1");
+      const later2 = (await time.latest()).add(new BN("2000"));
+      await collection.updateMetadata(false, false, "500", later2, "0");
+      expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.equal(later2);
+    });
+
+    it("updates mintingBeginsFrom to the past value", async function() {
+      const later = (await time.latest()).add(new BN("1000"));
+      const collection = await createCollection(this.factory, DixelClubV2NFT, deployer, { mintingBeginsFrom: later });
+      expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.equal(later);
+
+      // fuzzy checking
+      const now = await time.latest();
+      await collection.updateMetadata(false, false, "500", now, "0");
+      expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.gte(now);
+      expect((await collection.metaData()).mintingBeginsFrom_).to.be.bignumber.lte(later);
     });
 
     it("updates mintingCost", async function() {

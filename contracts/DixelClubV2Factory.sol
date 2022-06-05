@@ -75,7 +75,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         if(StringUtils.contains(symbol, 0x22)) revert DixelClubV2Factory__SymbolContainedMalicious();
         if(StringUtils.contains(description, 0x22)) revert DixelClubV2Factory__DescriptionContainedMalicious();
 
-        // Neutralize minting starts date for future reference
+        // Neutralize minting starts date
         if (metaData.mintingBeginsFrom < block.timestamp) {
             metaData.mintingBeginsFrom = uint40(block.timestamp);
         }
