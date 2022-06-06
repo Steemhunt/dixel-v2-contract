@@ -21,14 +21,14 @@ const TEST_DATA = {
   }
 };
 
-async function createCollection(factory, creator, customMetaData = {}, customDesc = "") {
+async function createCollection(factory, creator, customMetaData = {}, customDesc = "", customPixels = "") {
   const receipt = await factory.createCollection(
     TEST_DATA.name,
     TEST_DATA.symbol,
     customDesc || TEST_DATA.description,
     Object.values(Object.assign({}, TEST_DATA.metaData, customMetaData)),
     TEST_INPUT.palette,
-    TEST_INPUT.pixels,
+    customPixels || TEST_INPUT.pixels,
     { from: creator, value: await factory.creationFee() }
   );
   return await DixelClubV2NFT.at(receipt.logs[1].args.nftAddress);
@@ -516,4 +516,22 @@ contract("DixelClubV2NFT", function(accounts) {
       });
     }); // edge case
   }); // update metadata
+
+  describe("more SVG tests", function() {
+    it("generates successfully svg of more complex pixels", async function() {
+      /*
+        This more complex image adds the following checks to the basic "pixels" from TEST_INPUT:
+          - Uses colors #14,15,16 of the pallete to make sure all pallete is used correctly
+          - changes pixels(0,21)=13, pixels(0,22)=14, pixels(0,23)=15 - so 3 last pixels of first line should be different,
+              set correctly, and we'll be able to see if line is correct width
+          - pixels(23,22)=13, pixels(23,23)=13 - so last 2 pixels of image (bottom right corner) will be color #13
+          - pixelsPacked[108]=14, pixelsPacked[420]=15 - just to make sure algorithm can handle random single pixels
+          - pixels(23,0)=14 - bottom left corner should be colored
+      */
+      const collection = await createCollection(this.factory, alice, {}, "", TEST_INPUT.pixels2);
+      this.svg = fs.readFileSync(`${__dirname}/fixtures/test-svg-complex.svg`, 'utf8');
+
+      expect(await collection.generateSVG(0)).to.equal(this.svg);
+      });
+    });
 });
