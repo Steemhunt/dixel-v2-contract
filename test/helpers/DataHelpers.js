@@ -16,14 +16,14 @@ const TEST_DATA = {
   }
 };
 
-async function createCollection(factory, nft, creator, customMetaData = {}, customDesc = "") {
+async function createCollection(factory, nft, creator, customMetaData = {}, customDesc = "", customPixels = "") {
   const receipt = await factory.createCollection(
     TEST_DATA.name,
     TEST_DATA.symbol,
     customDesc || TEST_DATA.description,
     Object.values(Object.assign({}, TEST_DATA.metaData, customMetaData)),
     TEST_INPUT.palette,
-    TEST_INPUT.pixels,
+    customPixels || TEST_INPUT.pixels,
     { from: creator, value: await factory.creationFee() }
   );
   return await nft.at(receipt.logs[1].args.nftAddress);

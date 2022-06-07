@@ -512,7 +512,7 @@ contract("DixelClubV2NFT", function(accounts) {
           - pixelsPacked[108]=14, pixelsPacked[420]=15 - just to make sure algorithm can handle random single pixels
           - pixels(23,0)=14 - bottom left corner should be colored
       */
-      const collection = await createCollection(this.factory, alice, {}, "", TEST_INPUT.pixels2);
+      const collection = await createCollection(this.factory, DixelClubV2NFT, alice, {}, "", TEST_INPUT.pixels2);
       this.svg = fs.readFileSync(`${__dirname}/fixtures/test-svg-complex.svg`, 'utf8');
 
       expect(await collection.generateSVG(0)).to.equal(this.svg);

@@ -9,6 +9,6 @@ abstract contract Constants {
 
     uint256 internal constant PALETTE_SIZE = 16; // 16 colors max - equal to the data type max value of CANVAS_SIZE (2^8 = 16)
     uint256 internal constant CANVAS_SIZE = 24; // 24x24 pixels
-    uint256 internal constant TOTAL_PIXEL_COUNT = 576; // 24x24
+    uint256 internal constant TOTAL_PIXEL_COUNT = CANVAS_SIZE * CANVAS_SIZE; // 24x24
     uint256 internal constant PIXEL_ARRAY_SIZE = TOTAL_PIXEL_COUNT / 2; // packing 2 pixels in each uint8
 }

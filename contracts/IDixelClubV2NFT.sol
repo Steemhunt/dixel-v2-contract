@@ -12,6 +12,6 @@ interface IDixelClubV2NFT {
         string calldata description_,
         Shared.MetaData calldata metaData_,
         uint24[16] calldata palette_,
-        uint8[576] calldata pixels_
+        uint8[288] calldata pixels_
     ) external;
 }
