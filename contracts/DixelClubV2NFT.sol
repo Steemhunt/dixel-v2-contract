@@ -47,7 +47,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     uint256 private _tokenIdTracker;
 
     EditionData[] private _editionData; // Color (palette) data for each edition
-    uint8[TOTAL_PIXEL_COUNT] private _pixels; // 8 * 576 = 4608bit = 18 of 256bit storage block
+    uint8[PIXEL_ARRAY_SIZE] private _pixels; // 8 * 288 = 2304bit = 9 of 256bit storage block. Each uint8 saves 2 pixels.
     address[] private _whitelist;
     string private _description;
 
@@ -66,7 +66,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         string calldata description_,
         Shared.MetaData calldata metaData_,
         uint24[PALETTE_SIZE] calldata palette_,
-        uint8[TOTAL_PIXEL_COUNT] calldata pixels_
+        uint8[PIXEL_ARRAY_SIZE] calldata pixels_
     ) external {
         if(_initializedAt != 0) revert DixelClubV2__Initalized();
         _initializedAt = uint40(block.timestamp);
@@ -337,7 +337,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         string memory description_,
         uint256 totalSupply_,
         address owner_,
-        uint8[TOTAL_PIXEL_COUNT] memory pixels_,
+        uint8[PIXEL_ARRAY_SIZE] memory pixels_,
         uint24[PALETTE_SIZE] memory defaultPalette_
     ) {
         name_ = name();
@@ -358,7 +358,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         return _editionData[tokenId].palette;
     }
 
-    function getAllPixels() external view returns (uint8[TOTAL_PIXEL_COUNT] memory) {
+    function getAllPixels() external view returns (uint8[PIXEL_ARRAY_SIZE] memory) {
         return _pixels;
     }
 

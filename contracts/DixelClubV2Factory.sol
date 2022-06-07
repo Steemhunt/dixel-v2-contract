@@ -62,7 +62,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         string calldata description,
         Shared.MetaData memory metaData,
         uint24[PALETTE_SIZE] calldata palette,
-        uint8[TOTAL_PIXEL_COUNT] calldata pixels
+        uint8[PIXEL_ARRAY_SIZE] calldata pixels
     ) external payable returns (address) {
         if(bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
         if(bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();

@@ -11,7 +11,7 @@ interface IDixelClubV2Factory {
   function beneficiary (  ) external view returns ( address );
   function collectionCount (  ) external view returns ( uint256 );
   function collections ( uint256 ) external view returns ( address );
-  function createCollection ( string memory name, string memory symbol, Shared.MetaData memory metaData, uint24[16] memory palette, uint8[576] memory pixels ) external returns ( address );
+  function createCollection ( string memory name, string memory symbol, Shared.MetaData memory metaData, uint24[16] memory palette, uint8[288] memory pixels ) external returns ( address );
   function creationFee (  ) external view returns ( uint256 );
   function mintingFee (  ) external view returns ( uint256 );
   function nftImplementation (  ) external view returns ( address );
