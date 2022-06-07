@@ -55,7 +55,7 @@ contract("DixelClubV2Factory", function(accounts) {
 
     it('non-owner should not be able to update beneficiary', async function () {
       await expectRevert(
-        this.factory.updateBeneficiary(alice, "0", "0", { from: alice }),
+        this.factory.updateBeneficiary(alice, { from: alice }),
         "Ownable: caller is not the owner"
       );
     });
@@ -90,19 +90,18 @@ contract("DixelClubV2Factory", function(accounts) {
   });
 
   describe("Update beneficiary information", function() {
-    beforeEach(async function() {
-      await this.factory.updateBeneficiary(bob, ether("20"), "1000");
-    });
-
     it("should change beneficiary address", async function() {
+      await this.factory.updateBeneficiary(bob);
       expect(await this.factory.beneficiary()).to.equal(bob);
     });
 
-    it("should change creation fee to 20 DIXELs", async function() {
-      expect(await this.factory.creationFee()).to.be.bignumber.equal(ether("20"));
+    it("should change creation fee to 0.123 ether", async function() {
+      await this.factory.updateCreationFee(ether("0.123"));
+      expect(await this.factory.creationFee()).to.be.bignumber.equal(ether("0.123"));
     });
 
     it("should change minting fee to 10%", async function() {
+      await this.factory.updateMintingFee("1000");
       expect(await this.factory.mintingFee()).to.be.bignumber.equal("1000");
     });
   });
@@ -110,13 +109,13 @@ contract("DixelClubV2Factory", function(accounts) {
   describe("Update beneficiary - edge cases", function() {
     it("should not be able to set beneficiary as zero address", async function() {
       await expectRevert(
-        this.factory.updateBeneficiary(ZERO_ADDRESS, "0", "0"),
+        this.factory.updateBeneficiary(ZERO_ADDRESS),
         "DixelClubV2Factory__ZeroAddress"
       );
     });
     it("should not be able to set mintingFee over base friction (10,000)", async function() {
       await expectRevert(
-        this.factory.updateBeneficiary(bob, "0", "10001"),
+        this.factory.updateMintingFee("10001"),
         "DixelClubV2Factory__InvalidFee"
       );
     });

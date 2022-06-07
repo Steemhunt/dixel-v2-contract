@@ -106,13 +106,18 @@ contract DixelClubV2Factory is Constants, Ownable {
         nftImplementation = newImplementation;
     }
 
-    function updateBeneficiary(address newAddress, uint256 newCreationFee, uint256 newMintingFee) external onlyOwner {
-        if(newAddress == address(0)) revert DixelClubV2Factory__ZeroAddress();
-        if(newMintingFee > FRICTION_BASE) revert DixelClubV2Factory__InvalidFee();
+    function updateBeneficiary(address newAddress) external onlyOwner {
+      if(newAddress == address(0)) revert DixelClubV2Factory__ZeroAddress();
+      beneficiary = newAddress;
+    }
 
-        beneficiary = newAddress;
-        mintingFee = newMintingFee;
-        creationFee = newCreationFee;
+    function updateMintingFee(uint256 newMintingFee) external onlyOwner {
+      if(newMintingFee > FRICTION_BASE) revert DixelClubV2Factory__InvalidFee();
+      mintingFee = newMintingFee;
+    }
+
+    function updateCreationFee(uint256 newCreationFee) external onlyOwner {
+      creationFee = newCreationFee;
     }
 
     // MARK: - Utility functions
