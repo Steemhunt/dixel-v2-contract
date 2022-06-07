@@ -7,26 +7,14 @@ const DixelClubV2Factory = artifacts.require("DixelClubV2Factory");
 const DixelClubV2NFT = artifacts.require("DixelClubV2NFT");
 const DixelClubV2NFTMock = artifacts.require("DixelClubV2NFTMock");
 
-const TEST_INPUT = JSON.parse(fs.readFileSync(`${__dirname}/fixtures/test-input.json`, 'utf8'));
-const TEST_DATA = {
-  name: 'Test Collection',
-  symbol: 'TESTNFT',
-  description: 'This is a test collection',
-  metaData: {
-    whitelistOnly: false,
-    hidden: false,
-    maxSupply: 10,
-    royaltyFriction: 500, // 5%
-    mintingBeginsFrom: 0, // start immediately
-    mintingCost: ether("1"),
-  }
-};
+const { TEST_INPUT, TEST_DATA } = require("./helpers/DataHelpers");
 
 contract("DixelClubV2Factory", function(accounts) {
   const [ deployer, alice, bob ] = accounts;
 
   beforeEach(async function() {
-    this.factory = await DixelClubV2Factory.new();
+    this.impl = await DixelClubV2NFT.new();
+    this.factory = await DixelClubV2Factory.new(this.impl.address);
     this.creationFee = await this.factory.creationFee();
     this.beneficiary = await this.factory.beneficiary();
 
@@ -50,9 +38,9 @@ contract("DixelClubV2Factory", function(accounts) {
       assert.notEqual(await this.factory.nftImplementation(), ZERO_ADDRESS);
     });
 
-    it("nft implementation should have its factory contract as original owner", async function() {
+    it("nft implementation should have its deployer as original owner", async function() {
       const nft = await DixelClubV2NFT.at(await this.factory.nftImplementation());
-      expect(await nft.owner()).to.equal(this.factory.address);
+      expect(await nft.owner()).to.equal(deployer);
     });
   });
 
@@ -237,7 +225,8 @@ contract("DixelClubV2Factory", function(accounts) {
         expect(this.metaData.royaltyFriction_).to.be.bignumber.equal(String(TEST_DATA.metaData.royaltyFriction));
       });
       it("mintingBeginsFrom", async function() {
-        expect(this.metaData.mintingBeginsFrom_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingBeginsFrom));
+        const now = await time.latest();
+        expect(this.metaData.mintingBeginsFrom_).to.be.bignumber.lte(now); // will be set to the current time if "0"
       });
       it("mintingCost", async function() {
         expect(this.metaData.mintingCost_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingCost));

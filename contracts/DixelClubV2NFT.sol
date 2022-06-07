@@ -11,6 +11,7 @@ import "./lib/ColorUtils.sol";
 import "./lib/StringUtils.sol";
 import "./IDixelClubV2Factory.sol";
 import "./Shared.sol";
+import "./Constants.sol";
 import "./SVGGenerator.sol"; // inheriting Constants
 
 /**
@@ -20,7 +21,7 @@ import "./SVGGenerator.sol"; // inheriting Constants
  *  - a owner (Dixel contract) that allows for token minting (creation)
  *  - token ID and URI autogeneration
  */
-contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
+contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__NotExist();
     error DixelClubV2__Initalized();
     error DixelClubV2__InvalidCost(uint256 expected, uint256 actual);
@@ -29,10 +30,12 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
     error DixelClubV2__NotWhitelisted();
     error DixelClubV2__NotApproved();
     error DixelClubV2__PublicCollection();
+    error DixelClubV2__PrivateCollection();
     error DixelClubV2__InvalidRoyalty(uint256 invalid);
     error DixelClubV2__AlreadyStarted();
     error DixelClubV2__DescriptionTooLong();
     error DixelClubV2__ContainMalicious();
+    error DixelClubV2__WhiteListValueDoNotMatch(address expected, address actual);
 
     struct EditionData {
         uint24[PALETTE_SIZE] palette; // 24bit color (16,777,216) - up to 16 colors
@@ -50,8 +53,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     event Mint(address indexed to, uint256 indexed tokenId);
     event Burn(uint256 indexed tokenId);
-
-    receive() external payable {}
 
     modifier checkTokenExists(uint256 tokenId) {
         if (!_exists(tokenId)) revert DixelClubV2__NotExist();
@@ -88,23 +89,29 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         _mintNewEdition(owner_, palette_);
     }
 
-    function mint(address to, uint24[PALETTE_SIZE] calldata palette) public payable {
+    function mintPublic(address to, uint24[PALETTE_SIZE] calldata palette) external payable {
+        if(_metaData.whitelistOnly) revert DixelClubV2__PrivateCollection();
+
+        _mintWithFees(to, palette);
+    }
+
+    function mintPrivate(uint256 whitelistIndex, address to, uint24[PALETTE_SIZE] calldata palette) external payable {
+        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+
+        _removeWhitelist(whitelistIndex, msg.sender);
+
+        _mintWithFees(to, palette);
+    }
+
+    function _mintWithFees(address to, uint24[PALETTE_SIZE] calldata palette) private {
         uint256 mintingCost = uint256(_metaData.mintingCost);
 
         if(msg.value != mintingCost) revert DixelClubV2__InvalidCost(mintingCost, msg.value);
         if(_tokenIdTracker >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
         if(uint40(block.timestamp) < _metaData.mintingBeginsFrom) revert DixelClubV2__NotStarted(_metaData.mintingBeginsFrom, uint40(block.timestamp));
 
-        // For whitelist only collections
-        if (_metaData.whitelistOnly) {
-            if(!isWhitelistWallet(msg.sender)) revert DixelClubV2__NotWhitelisted();
-
-            _removeWhitelist(msg.sender); // decrease allowance by 1
-        }
-
         if (mintingCost > 0) {
             // Send fee to the beneficiary
-            // Best to mutiple before you divide
             uint256 fee = (mintingCost * _factory.mintingFee()) / FRICTION_BASE;
             (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
             require(sent, "FEE_TRANSFER_FAILED");
@@ -115,15 +122,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         }
 
         _mintNewEdition(to, palette);
-    }
-
-    function burn(uint256 tokenId) external {
-        if(!_isApprovedOrOwner(msg.sender, tokenId)) revert DixelClubV2__NotApproved(); // This will check existence of token
-
-        delete _editionData[tokenId];
-        _burn(tokenId);
-
-        emit Burn(tokenId);
     }
 
     function _mintNewEdition(address to, uint24[PALETTE_SIZE] calldata palette) private {
@@ -144,6 +142,15 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         emit Mint(to, tokenId);
     }
 
+    function burn(uint256 tokenId) external {
+        if(!_isApprovedOrOwner(msg.sender, tokenId)) revert DixelClubV2__NotApproved(); // This will check existence of token
+
+        delete _editionData[tokenId];
+        _burn(tokenId);
+
+        emit Burn(tokenId);
+    }
+
     function tokenURI(uint256 tokenId) public view override checkTokenExists(tokenId) returns (string memory) {
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(tokenJSON(tokenId)))));
     }
@@ -156,7 +163,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     // MARK: - Whitelist related functions
 
-    // @dev Maximum length of list array can be limited by block gas limit of blockchain
+    // @dev Maximum length of list parameter can be limited by block gas limit of blockchain
     // @notice Duplicated address input means multiple allowance
     function addWhitelist(address[] calldata list) external onlyOwner {
         if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
@@ -170,32 +177,16 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         }
     }
 
-    function _removeWhitelist(address wallet) private {
-        uint256 length = _whitelist.length;
-        for (uint256 i; i != length;) {
-            if (_whitelist[i] == wallet) {
-                _whitelist[i] = _whitelist[length - 1]; // put the last element into the delete index
-                _whitelist.pop(); // delete the last element to decrease array length;
+    function _removeWhitelist(uint256 index, address value) private {
+        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+        if (_whitelist[index] != value) revert DixelClubV2__WhiteListValueDoNotMatch(value, _whitelist[index]);
 
-                break; // delete the first matching one and stop
-            }
-            unchecked {
-                ++i;
-            }
-        }
+        _whitelist[index] = _whitelist[_whitelist.length - 1]; // put the last element into the delete index
+        _whitelist.pop(); // delete the last element to decrease array length;
     }
 
-    // @dev Maximum length of list array can be limited by block gas limit of blockchain
-    function removeWhitelist(address[] calldata list) external onlyOwner {
-        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
-
-        uint256 length = list.length; // gas saving
-        for (uint256 i; i < length;) {
-            _removeWhitelist(list[i]);
-            unchecked {
-                ++i;
-            }
-        }
+    function removeWhitelist(uint256 index, address value) external onlyOwner {
+        _removeWhitelist(index, value);
     }
 
     // @dev offset & limit for pagination
@@ -236,18 +227,18 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         return allowance;
     }
 
-    function isWhitelistWallet(address wallet) public view returns (bool) {
+    function getWhitelistIndex(address wallet) external view returns (uint256) {
         uint256 length = _whitelist.length; // gas saving
         for (uint256 i; i != length; ) {
             if (_whitelist[i] == wallet) {
-                return true;
+                return i;
             }
             unchecked {
                 ++i;
             }
         }
 
-        return false;
+        revert DixelClubV2__NotWhitelisted();
     }
 
 
@@ -255,7 +246,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
 
     function updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint40 mintingBeginsFrom, uint152 mintingCost) external onlyOwner {
         if(royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2__InvalidRoyalty(royaltyFriction);
-        if(_metaData.mintingBeginsFrom != mintingBeginsFrom && uint40(block.timestamp) > _metaData.mintingBeginsFrom) revert DixelClubV2__AlreadyStarted();
+        if(_metaData.mintingBeginsFrom != mintingBeginsFrom && uint40(block.timestamp) >= _metaData.mintingBeginsFrom) revert DixelClubV2__AlreadyStarted();
 
         _metaData.whitelistOnly = whitelistOnly;
         if (!_metaData.whitelistOnly) {
@@ -265,7 +256,12 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, SVGGenerator {
         _metaData.hidden = hidden;
         _metaData.royaltyFriction = royaltyFriction;
         _metaData.mintingBeginsFrom = mintingBeginsFrom;
+
         _metaData.mintingCost = mintingCost;
+        // Neutralize minting starts date
+        if (_metaData.mintingBeginsFrom < block.timestamp) {
+            _metaData.mintingBeginsFrom = uint40(block.timestamp);
+        }
     }
 
     function updateDescription(string calldata description) external onlyOwner {

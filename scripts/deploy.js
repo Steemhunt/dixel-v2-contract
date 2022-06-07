@@ -26,10 +26,8 @@ async function main() {
   console.log(`- DixelClubV2NFT (implementation contract): ${nftImplementation}`);
   console.log('```');
 
-  console.log(`
-    npx hardhat verify --network ${hre.network.name} ${factory.address}
-    npx hardhat verify --network ${hre.network.name} ${nftImplementation}
-  `);
+  hre.run('verify', {address: factory.address});
+  hre.run('verify', {address: nftImplementation});
 };
 
 main()

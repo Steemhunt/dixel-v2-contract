@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./lib/StringUtils.sol";
 import "./Constants.sol";
 import "./Shared.sol";
-import "./DixelClubV2NFT.sol";
+import "./IDixelClubV2NFT.sol";
 
 /**
 * @title Dixel Club (V2) NFT Factory
@@ -30,7 +30,7 @@ contract DixelClubV2Factory is Constants, Ownable {
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
      *  REF: https://github.com/optionality/clone-factory
      */
-    address payable public nftImplementation;
+    address public nftImplementation;
 
     address public beneficiary = address(0x82CA6d313BffE56E9096b16633dfD414148D66b1);
     uint256 public creationFee = 0.02 ether; // 0.02 ETH (~$50)
@@ -41,11 +41,11 @@ contract DixelClubV2Factory is Constants, Ownable {
 
     event CollectionCreated(address indexed nftAddress, string name, string symbol);
 
-    constructor() {
-        nftImplementation = payable(address(new DixelClubV2NFT()));
+    constructor(address DixelClubV2NFTImpl) {
+        nftImplementation = DixelClubV2NFTImpl;
     }
 
-    function _createClone(address target) private returns (address payable result) {
+    function _createClone(address target) private returns (address result) {
         bytes20 targetBytes = bytes20(target);
         assembly {
             let clone := mload(0x40)
@@ -60,10 +60,10 @@ contract DixelClubV2Factory is Constants, Ownable {
         string calldata name,
         string calldata symbol,
         string calldata description,
-        Shared.MetaData calldata metaData,
+        Shared.MetaData memory metaData,
         uint24[PALETTE_SIZE] calldata palette,
         uint8[PIXEL_ARRAY_SIZE] calldata pixels
-    ) external payable returns (address payable) {
+    ) external payable returns (address) {
         if(bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
         if(bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();
         if(bytes(description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
@@ -75,6 +75,11 @@ contract DixelClubV2Factory is Constants, Ownable {
         if(StringUtils.contains(symbol, 0x22)) revert DixelClubV2Factory__SymbolContainedMalicious();
         if(StringUtils.contains(description, 0x22)) revert DixelClubV2Factory__DescriptionContainedMalicious();
 
+        // Neutralize minting starts date
+        if (metaData.mintingBeginsFrom < block.timestamp) {
+            metaData.mintingBeginsFrom = uint40(block.timestamp);
+        }
+
         if (creationFee > 0) {
             if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
 
@@ -83,8 +88,8 @@ contract DixelClubV2Factory is Constants, Ownable {
             require(sent, "CREATION_FEE_TRANSFER_FAILED");
         }
 
-        address payable nftAddress = _createClone(nftImplementation);
-        DixelClubV2NFT newNFT = DixelClubV2NFT(nftAddress);
+        address nftAddress = _createClone(nftImplementation);
+        IDixelClubV2NFT newNFT = IDixelClubV2NFT(nftAddress);
         newNFT.init(msg.sender, name, symbol, description, metaData, palette, pixels);
 
         collections.push(nftAddress);
@@ -97,7 +102,7 @@ contract DixelClubV2Factory is Constants, Ownable {
     // MARK: Admin functions
 
     // This will update NFT contract implementaion and it won't affect existing collections
-    function updateImplementation(address payable newImplementation) external onlyOwner {
+    function updateImplementation(address newImplementation) external onlyOwner {
         nftImplementation = newImplementation;
     }
 
