@@ -218,7 +218,7 @@ contract("DixelClubV2NFT", function(accounts) {
       it("should prevent non-owner to burn token", async function() {
         await expectRevert(
           this.collection.burn("1", { from: carol }),
-          "DixelClubV2__NotApproved"
+          "TransferCallerNotOwnerNorApproved"
         );
       });
 
