@@ -15,6 +15,9 @@ abstract contract SVGGenerator is Constants {
     // - pros: faster average speed, smaller svg size (over 50%)
     // - cons: slower worst-case speed
 
+
+    // NOTE: viewBox -0.5 on top to prevent top side crop issue
+    // ref: https://codepen.io/shshaw/post/vector-pixels-svg-optimization-animation-and-understanding-path-data#crazy-pants-optimization-4
     string private constant HEADER = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 24 24" shape-rendering="crispEdges">';
     string private constant FOOTER = '</svg>';
 
@@ -46,7 +49,7 @@ abstract contract SVGGenerator is Constants {
                 }
 
                 if (x == CANVAS_SIZE - 1) {
-                    paths[current] = string(abi.encodePacked(paths[current], "h", ColorUtils.uint2str(width + 1)));
+                    paths[current] = string(abi.encodePacked(paths[current], "h", ColorUtils.uint2str(width)));
                 }
 
                 prev = current;

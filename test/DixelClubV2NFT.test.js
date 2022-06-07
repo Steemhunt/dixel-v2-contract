@@ -517,6 +517,13 @@ contract("DixelClubV2NFT", function(accounts) {
       this.svg = fs.readFileSync(`${__dirname}/fixtures/test-svg-complex.svg`, 'utf8');
 
       expect(await collection.generateSVG(0)).to.equal(this.svg);
-      });
     });
+
+    it("with a new testset", async function() {
+      const collection = await createCollection(this.factory, DixelClubV2NFT, alice, {}, "", TEST_INPUT.pixels3, TEST_INPUT.palette3);
+      this.svg = fs.readFileSync(`${__dirname}/fixtures/test-svg3.svg`, 'utf8');
+
+      expect(await collection.generateSVG(0)).to.equal(this.svg);
+    });
+  }); // more SVG tests
 });
