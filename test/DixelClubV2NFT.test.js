@@ -493,8 +493,11 @@ contract("DixelClubV2NFT", function(accounts) {
         await expectRevert(this.collection.updateDescription(longDescription, { from: alice }), "DixelClubV2__DescriptionTooLong");
       });
 
-      it("should check if description contains a quote", async function() {
-        await expectRevert(this.collection.updateDescription('hello "', { from: alice }), "DixelClubV2__ContainMalicious");
+      it("should check if description contains an invalid character", async function() {
+        await expectRevert(this.collection.updateDescription('hello "', { from: alice }), "DixelClubV2__DescriptionContainMalicious");
+        await expectRevert(this.collection.updateDescription('hello \\', { from: alice }), "DixelClubV2__DescriptionContainMalicious");
+        await expectRevert(this.collection.updateDescription('hello \u0005', { from: alice }), "DixelClubV2__DescriptionContainMalicious");
+        await expectRevert(this.collection.updateDescription('hello \u007f', { from: alice }), "DixelClubV2__DescriptionContainMalicious");
       });
     }); // edge case
   }); // update metadata

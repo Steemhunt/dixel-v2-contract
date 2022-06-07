@@ -71,9 +71,9 @@ contract DixelClubV2Factory is Constants, Ownable {
         if(metaData.royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2Factory__InvalidRoyalty();
 
         // Validate `symbol`, `name` and `description` to ensure generateJSON() creates a valid JSON
-        if(StringUtils.contains(name, 0x22)) revert DixelClubV2Factory__NameContainedMalicious();
-        if(StringUtils.contains(symbol, 0x22)) revert DixelClubV2Factory__SymbolContainedMalicious();
-        if(StringUtils.contains(description, 0x22)) revert DixelClubV2Factory__DescriptionContainedMalicious();
+        if(!StringUtils.validJSONValue(name)) revert DixelClubV2Factory__NameContainedMalicious();
+        if(!StringUtils.validJSONValue(symbol)) revert DixelClubV2Factory__SymbolContainedMalicious();
+        if(!StringUtils.validJSONValue(description)) revert DixelClubV2Factory__DescriptionContainedMalicious();
 
         // Neutralize minting starts date
         if (metaData.mintingBeginsFrom < block.timestamp) {

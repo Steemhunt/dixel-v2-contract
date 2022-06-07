@@ -147,12 +147,35 @@ contract("DixelClubV2Factory", function(accounts) {
       this.testParams[2] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
       await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionTooLong");
     });
-    it("should check if symbol contains a quote", async function() {
+
+    it("should check if name contains an invalid character", async function() {
+      this.testParams[0] = 'Name"';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
+      this.testParams[0] = 'Name\\';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
+      this.testParams[0] = 'Name\u001f';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
+      this.testParams[0] = 'Name\u007f';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
+    });
+    it("should check if symbol contains an invalid character", async function() {
       this.testParams[1] = 'SYMBOL"';
       await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
+      this.testParams[1] = 'SYMBOL\\';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
+      this.testParams[1] = 'SYMBOL\u0000';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
+      this.testParams[1] = 'SYMBOL\u007f';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
     });
-    it("should check if description contains a quote", async function() {
-      this.testParams[2] = 'what ever ""';
+    it("should check if description contains an invalid character", async function() {
+      this.testParams[2] = 'what ever "';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
+      this.testParams[2] = 'what ever \\';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
+      this.testParams[2] = 'what ever \u0001';
+      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
+      this.testParams[2] = 'what ever \u007f';
       await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
     });
 

@@ -34,7 +34,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__InvalidRoyalty(uint256 invalid);
     error DixelClubV2__AlreadyStarted();
     error DixelClubV2__DescriptionTooLong();
-    error DixelClubV2__ContainMalicious();
+    error DixelClubV2__DescriptionContainMalicious();
     error DixelClubV2__WhiteListValueDoNotMatch(address expected, address actual);
 
     struct EditionData {
@@ -266,7 +266,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
     function updateDescription(string calldata description) external onlyOwner {
         if (bytes(description).length > 1000) revert DixelClubV2__DescriptionTooLong(); // ~900 gas per character
-        if (StringUtils.contains(description, 0x22)) revert DixelClubV2__ContainMalicious();
+        if (!StringUtils.validJSONValue(description)) revert DixelClubV2__DescriptionContainMalicious();
 
         _description = description;
     }
