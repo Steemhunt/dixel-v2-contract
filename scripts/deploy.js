@@ -11,23 +11,28 @@ async function main() {
   const deployer = accounts[0].address;
   console.log(`Deploy from account: ${deployer}`);
 
+  // MARK: - Deploy NFT contract
+  const DixelClubV2NFT = await hre.ethers.getContractFactory('DixelClubV2NFT');
+  const nft = await DixelClubV2NFT.deploy();
+  await nft.deployed();
+  console.log(` -> DixelClubV2NFT contract deployed at ${nft.address}`);
+
   // MARK: - Deploy Factory
   const DixelClubV2Factory = await hre.ethers.getContractFactory('DixelClubV2Factory');
-  const factory = await DixelClubV2Factory.deploy();
+  const factory = await DixelClubV2Factory.deploy(nft.address);
   await factory.deployed();
   console.log(` -> DixelClubV2Factory contract deployed at ${factory.address}`);
-
-  const nftImplementation = await factory.nftImplementation();
-  console.log(`    -> NFT implementation contract: ${nftImplementation}`);
 
   console.log(`Network: ${hre.network.name}`);
   console.log('```');
   console.log(`- DixelClubV2Factory: ${factory.address}`);
-  console.log(`- DixelClubV2NFT (implementation contract): ${nftImplementation}`);
+  console.log(`- DixelClubV2NFT (implementation contract): ${nft.address}`);
   console.log('```');
 
-  hre.run('verify', {address: factory.address});
-  hre.run('verify', {address: nftImplementation});
+  console.log(`
+    npx hardhat verify --network ${hre.network.name} ${nft.address}
+    npx hardhat verify --network ${hre.network.name} ${factory.address} '${nft.address}'
+  `);
 };
 
 main()
