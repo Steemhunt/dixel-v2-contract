@@ -29,7 +29,7 @@ abstract contract SVGGenerator is Constants {
             paths[prev] = string(abi.encodePacked(paths[prev], "M0 ", ColorUtils.uint2str(y)));
             uint256 width = 1;
 
-            for (uint256 x = 1; x < CANVAS_SIZE; ) {
+            for (uint256 x = 1; x < CANVAS_SIZE;) {
                 /*
                     Pixels array: we're packing 2 pixels into each uint8.
                     So pixels[y * CANVAS_SIZE/2 + x/2] contains pixels (x,y) and (x+1,y).
@@ -64,7 +64,7 @@ abstract contract SVGGenerator is Constants {
         }
 
         string memory joined;
-        for (uint256 i; i < PALETTE_SIZE; ) {
+        for (uint256 i; i < PALETTE_SIZE;) {
             if (bytes(paths[i]).length > 0) {
                 joined = string(abi.encodePacked(joined, '<path stroke="#', ColorUtils.uint2hex(palette[i]), '" d="', paths[i], '"/>'));
             }
