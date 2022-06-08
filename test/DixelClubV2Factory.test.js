@@ -253,6 +253,12 @@ contract("DixelClubV2Factory", function(accounts) {
       it("mintingCost", async function() {
         expect(this.metaData.mintingCost_).to.be.bignumber.equal(String(TEST_DATA.metaData.mintingCost));
       });
+      it("nextTokenId", async function() {
+        expect(this.metaData.nextTokenId_).to.be.bignumber.equal("1");
+      });
+      it("totalSupply", async function() {
+        expect(this.metaData.totalSupply_).to.be.bignumber.equal("1");
+      });
       it("description", async function() {
         expect(this.metaData.description_).to.equal(TEST_DATA.description);
       });

@@ -49,7 +49,7 @@ module.exports = {
       accounts: [process.env.GOERLI_TEST_PRIVATE_KEY]
     },
     bsctest: {
-      url: `https://data-seed-prebsc-1-s1.binance.org:8545/`,
+      url: `https://data-seed-prebsc-2-s1.binance.org:8545/`,
       chainId: 97,
       gasPrice: 10000000000, // 10 GWei
       blockGasLimit: 60000000, // 60M
@@ -83,7 +83,11 @@ module.exports = {
     coinmarketcap: process.env.COIN_MARKET_CAP_API
   },
   etherscan: {
-    apiKey: process.env.BSCSCAN_API_KEY // ETHERSCAN_API_KEY / BSCSCAN_API_KEY
+    // network list: https://github.com/NomicFoundation/hardhat/blob/master/packages/hardhat-etherscan/src/ChainConfig.ts
+    apiKey: {
+        goerli: process.env.ETHERSCAN_API_KEY,
+        bscTestnet: process.env.BSCSCAN_API_KEY
+    }
   },
   mocha: {
     timeout: 120000 // 2 minutes for test timeout

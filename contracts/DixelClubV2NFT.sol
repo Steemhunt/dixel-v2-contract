@@ -314,26 +314,26 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     function metaData() external view returns (
         string memory name_,
-        string memory symbol_,
         bool whitelistOnly_,
         uint24 maxSupply_,
         uint24 royaltyFriction_,
         uint40 mintingBeginsFrom_,
         uint168 mintingCost_,
         string memory description_,
+        uint256 nextTokenId_,
         uint256 totalSupply_,
         address owner_,
         uint8[PIXEL_ARRAY_SIZE] memory pixels_,
         uint24[PALETTE_SIZE] memory defaultPalette_
     ) {
         name_ = name();
-        symbol_ = symbol();
         whitelistOnly_ = _metaData.whitelistOnly;
         maxSupply_ = _metaData.maxSupply;
         royaltyFriction_ = _metaData.royaltyFriction;
         mintingBeginsFrom_ = _metaData.mintingBeginsFrom;
         mintingCost_ = _metaData.mintingCost;
         description_ = _description;
+        nextTokenId_ = nextTokenId();
         totalSupply_ = totalSupply();
         owner_ = owner();
         pixels_ = _pixels;
