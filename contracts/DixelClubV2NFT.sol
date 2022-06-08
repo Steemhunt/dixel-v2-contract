@@ -6,7 +6,8 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "base64-sol/base64.sol";
-import "./lib/ERC721Enumerable.sol";
+import "./lib/ERC721Initializable.sol";
+import "./lib/ERC721Queryable.sol";
 import "./lib/ColorUtils.sol";
 import "./lib/StringUtils.sol";
 import "./IDixelClubV2Factory.sol";
@@ -21,7 +22,7 @@ import "./SVGGenerator.sol"; // inheriting Constants
  *  - a owner (Dixel contract) that allows for token minting (creation)
  *  - token ID and URI autogeneration
  */
-contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
+contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__NotExist();
     error DixelClubV2__Initalized();
     error DixelClubV2__InvalidCost(uint256 expected, uint256 actual);
@@ -44,7 +45,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     IDixelClubV2Factory private _factory;
     uint40 private _initializedAt;
     Shared.MetaData private _metaData; // Collection meta data
-    uint256 private _tokenIdTracker;
 
     EditionData[] private _editionData; // Color (palette) data for each edition
     uint8[PIXEL_ARRAY_SIZE] private _pixels; // 8 * 288 = 2304bit = 9 of 256bit storage block. Each uint8 saves 2 pixels.
@@ -107,7 +107,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         uint256 mintingCost = uint256(_metaData.mintingCost);
 
         if(msg.value != mintingCost) revert DixelClubV2__InvalidCost(mintingCost, msg.value);
-        if(_tokenIdTracker >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
+        if(nextTokenId() >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
         if(uint40(block.timestamp) < _metaData.mintingBeginsFrom) revert DixelClubV2__NotStarted(_metaData.mintingBeginsFrom, uint40(block.timestamp));
 
         if (mintingCost > 0) {
@@ -125,21 +125,16 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
     }
 
     function _mintNewEdition(address to, uint24[PALETTE_SIZE] calldata palette) private {
-        // We cannot just use balanceOf to create the new tokenId because tokens
-        // can be burned (destroyed), so we need a separate counter.
-        uint256 tokenId;
-        unchecked {
-            tokenId = _tokenIdTracker++;
-        }
+        uint256 nextId = nextTokenId();
 
         _editionData.push(EditionData(palette));
         unchecked {
-            assert(tokenId == _editionData.length - 1);
+            assert(nextId == _editionData.length - 1);
         }
 
-        _safeMint(to, tokenId);
+        _safeMint(to, nextId);
 
-        emit Mint(to, tokenId);
+        emit Mint(to, nextId);
     }
 
     function burn(uint256 tokenId) external {
@@ -308,10 +303,6 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         ));
     }
 
-    function nextTokenId() external view returns (uint256) {
-        return _tokenIdTracker;
-    }
-
     function exists(uint256 tokenId) external view returns (bool) {
         return _exists(tokenId);
     }
@@ -359,7 +350,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
     // MARK: - Override extensions
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721Enumerable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721Initializable) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 
