@@ -266,8 +266,7 @@ contract("DixelClubV2NFT", function(accounts) {
 
       it("should return all whitelist correctly", async function() {
         const list = await this.collection.getAllWhitelist("0", "2");
-        expect(list[0]).to.equal(alice);
-        expect(list[1]).to.equal(bob);
+        expect(list).to.deep.equal([alice, bob]);
       });
     }); // initial states
 
@@ -280,22 +279,17 @@ contract("DixelClubV2NFT", function(accounts) {
 
       it("should paginate correctly with offset and limit", async function() {
         const list = await this.collection.getAllWhitelist("2", "3");
-        expect(list.length).to.equal(3);
-        expect(list[0]).to.equal(carol);
-        expect(list[1]).to.equal(alice);
-        expect(list[2]).to.equal(bob);
+        expect(list).to.deep.equal([carol, alice, bob]);
       });
 
       it("should return empty array if offset >= length", async function() {
         const list = await this.collection.getAllWhitelist("10", "3");
-        expect(list.length).to.equal(0);
+        expect(list).to.deep.equal([]);
       });
 
       it("should output all results up to the end of the array if offset + limit > whitelist length", async function() {
         const list = await this.collection.getAllWhitelist("8", "5");
-        expect(list.length).to.equal(2);
-        expect(list[0]).to.equal(bob);
-        expect(list[1]).to.equal(bob);
+        expect(list).to.deep.equal([bob, bob]);
       });
     }); // pagination
 
@@ -359,9 +353,7 @@ contract("DixelClubV2NFT", function(accounts) {
         await this.collection.addWhitelist([bob], { from: alice });
 
         const list = await this.collection.getAllWhitelist("0", "3");
-        expect(list[0]).to.equal(alice);
-        expect(list[1]).to.equal(bob);
-        expect(list[2]).to.equal(bob);
+        expect(list).to.deep.equal([alice, bob, bob]);
       });
 
       it("should return a crrect allowance once duplicated", async function() {

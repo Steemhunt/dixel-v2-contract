@@ -186,20 +186,20 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     // @dev offset & limit for pagination
     function getAllWhitelist(uint256 offset, uint256 limit) external view returns (address[] memory list) {
-        uint256 length = _whitelist.length;
-        uint256 count = limit;
+        unchecked {
+            address[] memory clone = _whitelist; // gas saving
+            uint256 length = clone.length; // gas saving
+            uint256 count = limit;
 
-        if (offset >= length) {
-            return list; // empty list
-        } else if (offset + limit > length) {
-            count = length - offset;
-        }
+            if (offset >= length) {
+                return list; // empty list
+            } else if (offset + limit > length) {
+                count = length - offset;
+            }
 
-        list = new address[](count);
-        for (uint256 i = 0; i != count;) {
-            list[i] = _whitelist[offset + i];
-            unchecked {
-                ++i;
+            list = new address[](count);
+            for (uint256 i = 0; i != count; ++i) {
+                list[i] = clone[offset + i];
             }
         }
     }
@@ -209,31 +209,31 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     }
 
     function getWhitelistAllowanceLeft(address wallet) external view returns (uint256 allowance) {
-        uint256 length = _whitelist.length; // gas saving
-        for (uint256 i; i != length;) {
-            if (_whitelist[i] == wallet) {
-                allowance++;
+        unchecked {
+            address[] memory clone = _whitelist; // gas saving
+            uint256 length = clone.length; // gas saving
+            for (uint256 i; i != length; ++i) {
+                if (clone[i] == wallet) {
+                    allowance++;
+                }
             }
-            unchecked {
-                ++i;
-            }
-        }
 
-        return allowance;
+            return allowance;
+        }
     }
 
     function getWhitelistIndex(address wallet) external view returns (uint256) {
-        uint256 length = _whitelist.length; // gas saving
-        for (uint256 i; i != length;) {
-            if (_whitelist[i] == wallet) {
-                return i;
+        unchecked {
+            address[] memory clone = _whitelist; // gas saving
+            uint256 length = clone.length; // gas saving
+            for (uint256 i; i != length; ++i) {
+                if (clone[i] == wallet) {
+                    return i;
+                }
             }
-            unchecked {
-                ++i;
-            }
-        }
 
-        revert DixelClubV2__NotWhitelisted();
+            revert DixelClubV2__NotWhitelisted();
+        }
     }
 
 
