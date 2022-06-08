@@ -526,4 +526,43 @@ contract("DixelClubV2NFT", function(accounts) {
       expect(await collection.generateSVG(0)).to.equal(this.svg);
     });
   }); // more SVG tests
+
+  describe("ERC721Queryable", function() {
+    beforeEach(async function() {
+      this.collection = await createCollection(this.factory, DixelClubV2NFT, alice); // 0
+      await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // 1
+      await this.collection.mintPublic(carol, TEST_INPUT.palette3, { from: carol, value: this.mintingCost }); // 2
+      await this.collection.mintPublic(bob, TEST_INPUT.palette, { from: bob, value: this.mintingCost }); // 3
+      await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost }); // 4
+      await this.collection.mintPublic(alice, TEST_INPUT.palette3, { from: alice, value: this.mintingCost }); // 5
+      await this.collection.mintPublic(alice, TEST_INPUT.palette3, { from: alice, value: this.mintingCost }); // 6
+      await this.collection.mintPublic(bob, TEST_INPUT.palette, { from: bob, value: this.mintingCost }); // 7
+    });
+
+    it("should return correct tokenIds for alice", async function() {
+      const ids = (await this.collection.tokensOfOwner(alice)).map(id => parseInt(id));
+      expect(ids).to.deep.equal([0, 5, 6]);
+    });
+
+    it("should return correct tokenIds for bob", async function() {
+      const ids = (await this.collection.tokensOfOwner(bob)).map(id => parseInt(id));
+      expect(ids).to.deep.equal([1, 3, 4, 7]);
+    });
+
+    it("should return correct tokenIds for carol", async function() {
+      const ids = (await this.collection.tokensOfOwner(carol)).map(id => parseInt(id));
+      expect(ids).to.deep.equal([2]);
+    });
+
+    it("should return correct paginated results", async function() {
+      let ids = (await this.collection.tokensOfOwnerIn(bob, 2, 6)).map(id => parseInt(id));
+      expect(ids).to.deep.equal([3, 4]);
+
+      ids = (await this.collection.tokensOfOwnerIn(alice, 0, 3)).map(id => parseInt(id));
+      expect(ids).to.deep.equal([0]);
+
+      ids = (await this.collection.tokensOfOwnerIn(carol, 3, 7)).map(id => parseInt(id));
+      expect(ids).to.deep.equal([]);
+    });
+  }); // ERC721Queryable
 });
