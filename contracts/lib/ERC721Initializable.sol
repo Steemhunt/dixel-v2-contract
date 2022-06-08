@@ -15,7 +15,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 /**
  * @dev A slightly modified version of ERC721.sol (from Openzeppelin 4.6.0) for initialization pattern
  *   - remove constructor
- *   - make `_name`, and `_symbol` internal instead of private
+ *   - make `_name`, `_symbol` and `_owners` internal instead of private
  *   - rename ERC721 -> ERC721Initializable
  */
 abstract contract ERC721Initializable is Context, ERC165, IERC721, IERC721Metadata {
@@ -29,7 +29,7 @@ abstract contract ERC721Initializable is Context, ERC165, IERC721, IERC721Metada
     string internal _symbol;
 
     // Mapping from token ID to owner address
-    mapping(uint256 => address) private _owners;
+    mapping(uint256 => address) internal _owners;
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
