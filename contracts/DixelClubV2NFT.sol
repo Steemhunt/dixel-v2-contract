@@ -169,7 +169,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
         if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
 
         uint256 length = list.length; // gas saving
-        for (uint256 i; i != length; ) {
+        for (uint256 i; i != length;) {
             _whitelist.push(list[i]);
             unchecked {
                 ++i;
@@ -215,7 +215,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
     function getWhitelistAllowanceLeft(address wallet) external view returns (uint256 allowance) {
         uint256 length = _whitelist.length; // gas saving
-        for (uint256 i; i != length; ) {
+        for (uint256 i; i != length;) {
             if (_whitelist[i] == wallet) {
                 allowance++;
             }
@@ -229,7 +229,7 @@ contract DixelClubV2NFT is ERC721Enumerable, Ownable, Constants, SVGGenerator {
 
     function getWhitelistIndex(address wallet) external view returns (uint256) {
         uint256 length = _whitelist.length; // gas saving
-        for (uint256 i; i != length; ) {
+        for (uint256 i; i != length;) {
             if (_whitelist[i] == wallet) {
                 return i;
             }

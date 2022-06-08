@@ -12,7 +12,7 @@ library StringUtils {
     function validJSONValue(string calldata haystack) internal pure returns (bool) {
         bytes memory haystackBytes = bytes(haystack);
         uint256 length = haystackBytes.length;
-        for (uint256 i; i != length; ) {
+        for (uint256 i; i != length;) {
             bytes1 char = haystackBytes[i];
             if (char < 0x20 || char == 0x22 || char == 0x5c || char == 0x7f) {
                 return false;
