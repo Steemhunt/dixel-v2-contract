@@ -34,8 +34,8 @@ npx hardhat test
 ## Contracts
 
 ### Ethereum Testnet (Goerli)
-- DixelClubV2Factory: [0xAcE7409436c6b464bE01c22Af967498822277CEF](https://goerli.etherscan.io/address/0xAcE7409436c6b464bE01c22Af967498822277CEF#code)
-- DixelClubV2NFT (implementation contract): [0xDA2aE2aAFA6944D16296beD8652cFe909F2B4a15](https://goerli.etherscan.io/address/0xDA2aE2aAFA6944D16296beD8652cFe909F2B4a15#code)
+- DixelClubV2Factory: [0xDA2aE2aAFA6944D16296beD8652cFe909F2B4a15](https://goerli.etherscan.io/address/0xDA2aE2aAFA6944D16296beD8652cFe909F2B4a15#code)
+- DixelClubV2NFT (implementation contract): [0xAcE7409436c6b464bE01c22Af967498822277CEF](https://goerli.etherscan.io/address/0xAcE7409436c6b464bE01c22Af967498822277CEF#code)
 
 ### BSC Testnet
 - DixelClubV2Factory: [0xe413597C3e2DA25c9aE8a5CFdE36935f15727B52](https://testnet.bscscan.com/address/0xe413597C3e2DA25c9aE8a5CFdE36935f15727B52#code)
