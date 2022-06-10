@@ -48,6 +48,10 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     EditionData[] private _editionData; // Color (palette) data for each edition
     uint8[PIXEL_ARRAY_SIZE] private _pixels; // 8 * 288 = 2304bit = 9 of 256bit storage block. Each uint8 saves 2 pixels.
+
+    // NOTE: Implemented whitelist managing function with the simplest structure for gas saving
+    // - EnumerableMap adds 3-5x more gas
+    // - MerkleTree doesn't fit for managing the actual list on-chain
     address[] private _whitelist;
     string private _description;
 
@@ -165,7 +169,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
         uint256 length = list.length; // gas saving
         for (uint256 i; i != length;) {
-            _whitelist.push(list[i]);
+            _whitelist.push(list[i]); // O(1) for adding 1 address
             unchecked {
                 ++i;
             }
@@ -180,8 +184,13 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
         _whitelist.pop(); // delete the last element to decrease array length;
     }
 
+    // @dev O(1) for removing by index
     function removeWhitelist(uint256 index, address value) external onlyOwner {
         _removeWhitelist(index, value);
+    }
+
+    function resetWhitelist() external onlyOwner {
+        delete _whitelist;
     }
 
     // @dev offset & limit for pagination
@@ -208,6 +217,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
         return _whitelist.length;
     }
 
+    // @dev utility function for front-end, that can be reverted if the list is too big
     function getWhitelistAllowanceLeft(address wallet) external view returns (uint256 allowance) {
         unchecked {
             address[] memory clone = _whitelist; // gas saving
@@ -222,6 +232,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
         }
     }
 
+    // @dev utility function for front-end, that can be reverted if the list is too big
     function getWhitelistIndex(address wallet) external view returns (uint256) {
         unchecked {
             address[] memory clone = _whitelist; // gas saving

@@ -310,6 +310,12 @@ contract("DixelClubV2NFT", function(accounts) {
           "DixelClubV2__WhiteListValueDoNotMatch"
         );
       });
+
+      it("should remove all whitelist if reset", async function() {
+        await this.collection.resetWhitelist({ from: alice });
+        expect(await this.collection.getAllWhitelist("0", "100")).to.deep.equal([]);
+        expect(await this.collection.getWhitelistCount()).to.be.bignumber.equal("0");
+      });
     }); // remove whitelist
 
     describe("after minting", async function() {
