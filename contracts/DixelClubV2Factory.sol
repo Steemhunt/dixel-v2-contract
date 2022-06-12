@@ -70,6 +70,14 @@ contract DixelClubV2Factory is Constants, Ownable {
         if(metaData.maxSupply == 0 || metaData.maxSupply > MAX_SUPPLY) revert DixelClubV2Factory__InvalidMaxSupply();
         if(metaData.royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2Factory__InvalidRoyalty();
 
+        if (creationFee > 0) {
+            if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
+            
+            // Send fee to the beneficiary
+            (bool sent, ) = beneficiary.call{ value: creationFee }("");
+            require(sent, "CREATION_FEE_TRANSFER_FAILED");
+        }
+
         // Validate `symbol`, `name` and `description` to ensure generateJSON() creates a valid JSON
         if(!StringUtils.validJSONValue(name)) revert DixelClubV2Factory__NameContainedMalicious();
         if(!StringUtils.validJSONValue(symbol)) revert DixelClubV2Factory__SymbolContainedMalicious();
@@ -78,14 +86,6 @@ contract DixelClubV2Factory is Constants, Ownable {
         // Neutralize minting starts date
         if (metaData.mintingBeginsFrom < block.timestamp) {
             metaData.mintingBeginsFrom = uint40(block.timestamp);
-        }
-
-        if (creationFee > 0) {
-            if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
-
-            // Send fee to the beneficiary
-            (bool sent, ) = beneficiary.call{ value: creationFee }("");
-            require(sent, "CREATION_FEE_TRANSFER_FAILED");
         }
 
         address nftAddress = _createClone(nftImplementation);
