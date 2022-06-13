@@ -1,5 +1,4 @@
-const { ether, balance, time, BN, constants, expectEvent, expectRevert, send } = require("@openzeppelin/test-helpers");
-const { MAX_UINT256, ZERO_ADDRESS } = constants;
+const { ether, balance, time, BN, expectEvent, expectRevert, send } = require("@openzeppelin/test-helpers");
 const { expect } = require("chai");
 const fs = require("fs");
 
@@ -81,6 +80,11 @@ contract("DixelClubV2NFT", function(accounts) {
     beforeEach(async function() {
       this.collection = await createCollection(this.factory, DixelClubV2NFT, alice);
       this.mintingFee = this.mintingCost.mul(await this.factory.mintingFee()).div(await this.factory.FRICTION_BASE());
+    });
+
+    it("should emit Mint event", async function() {
+      const receipt = await this.collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      expectEvent(receipt, "Mint", { to: bob, tokenId: "1" });
     });
 
     it("should revert if sending an invalid minting fee", async function() {
@@ -183,7 +187,7 @@ contract("DixelClubV2NFT", function(accounts) {
         expect(await this.collection.contractURI()).to.equal(base64);
       });
     });
-  }); // mintingn a new edition
+  }); // minting a new edition
 
   describe("burn", function() {
     beforeEach(async function() {
@@ -198,7 +202,11 @@ contract("DixelClubV2NFT", function(accounts) {
 
     describe("owner can burn their NFT", function() {
       beforeEach(async function() {
-        await this.collection.burn("1", { from: bob });
+        this.receipt = await this.collection.burn("1", { from: bob });
+      });
+
+      it('should emit Burn event', async function() {
+        expectEvent(this.receipt, "Burn", { tokenId: "1" });
       });
 
       it("should delete the token", async function() {
@@ -262,6 +270,13 @@ contract("DixelClubV2NFT", function(accounts) {
       it("should have bob in whitelist", async function() {
         expect(await this.collection.getWhitelistIndex(bob)).to.be.bignumber.equal("1");
         expect(await this.collection.getWhitelistAllowanceLeft(bob)).to.be.bignumber.equal("1");
+      });
+
+      it("should revert if user is not in whitelist", async function() {
+        await expectRevert(
+          this.collection.getWhitelistIndex(carol),
+          "DixelClubV2__NotWhitelisted"
+        );
       });
 
       it("should return all whitelist correctly", async function() {

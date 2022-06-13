@@ -206,9 +206,6 @@ contract("DixelClubV2Factory", function(accounts) {
     beforeEach(async function() {
       this.receipt = await this.factory.createCollection(...this.testParams);
       this.collection = await DixelClubV2NFT.at(this.receipt.logs[1].args.nftAddress);
-
-      const metaData = await this.collection.metaData();
-
     });
 
     it("should have correct ERC721 attributes", async function() {
