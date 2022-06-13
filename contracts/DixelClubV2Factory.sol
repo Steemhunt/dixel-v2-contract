@@ -64,6 +64,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         uint24[PALETTE_SIZE] calldata palette,
         uint8[PIXEL_ARRAY_SIZE] calldata pixels
     ) external payable returns (address) {
+        if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
         if(bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
         if(bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();
         if(bytes(description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
@@ -80,9 +81,7 @@ contract DixelClubV2Factory is Constants, Ownable {
             metaData.mintingBeginsFrom = uint40(block.timestamp);
         }
 
-        if (creationFee > 0) {
-            if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
-
+        if (creationFee > 0) {    
             // Send fee to the beneficiary
             (bool sent, ) = beneficiary.call{ value: creationFee }("");
             require(sent, "CREATION_FEE_TRANSFER_FAILED");
