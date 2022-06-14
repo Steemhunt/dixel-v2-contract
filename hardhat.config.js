@@ -49,9 +49,9 @@ module.exports = {
       accounts: [process.env.GOERLI_TEST_PRIVATE_KEY]
     },
     ethmain: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_ETH_API_KEY}`,
-      chainId: 5,
-      gasPrice: 40000000000, // 40 gwei
+      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_ETH_API_KEY}`,
+      chainId: 1,
+      gasPrice: 38000000000, // 30 gwei
       blockGasLimit: 29000000, // 29M
       accounts: [process.env.ETH_PRIVATE_KEY]
     },
@@ -93,7 +93,9 @@ module.exports = {
     // network list: https://github.com/NomicFoundation/hardhat/blob/master/packages/hardhat-etherscan/src/ChainConfig.ts
     apiKey: {
         goerli: process.env.ETHERSCAN_API_KEY,
-        bscTestnet: process.env.BSCSCAN_API_KEY
+        bscTestnet: process.env.BSCSCAN_API_KEY,
+        mainnet: process.env.ETHERSCAN_API_KEY,
+        bsc: process.env.BSCSCAN_API_KEY,
     }
   },
   mocha: {
