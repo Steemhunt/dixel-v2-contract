@@ -48,6 +48,13 @@ module.exports = {
       blockGasLimit: 29000000, // 29M
       accounts: [process.env.GOERLI_TEST_PRIVATE_KEY]
     },
+    ethmain: {
+      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_ETH_API_KEY}`,
+      chainId: 5,
+      gasPrice: 40000000000, // 40 gwei
+      blockGasLimit: 29000000, // 29M
+      accounts: [process.env.ETH_PRIVATE_KEY]
+    },
     bsctest: {
       url: `https://data-seed-prebsc-2-s1.binance.org:8545/`,
       chainId: 97,
