@@ -81,7 +81,7 @@ contract DixelClubV2Factory is Constants, Ownable {
             metaData.mintingBeginsFrom = uint40(block.timestamp);
         }
 
-        if (creationFee > 0) {    
+        if (creationFee > 0) {
             // Send fee to the beneficiary
             (bool sent, ) = beneficiary.call{ value: creationFee }("");
             require(sent, "CREATION_FEE_TRANSFER_FAILED");
