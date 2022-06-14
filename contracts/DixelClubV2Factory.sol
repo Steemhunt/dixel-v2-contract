@@ -8,11 +8,6 @@ import "./Constants.sol";
 import "./Shared.sol";
 import "./IDixelClubV2NFT.sol";
 
-/**
-* @title Dixel Club (V2) NFT Factory
-*
-* Create an ERC721 Dixel Club NFTs using proxy pattern to save gas
-*/
 contract DixelClubV2Factory is Constants, Ownable {
     error DixelClubV2Factory__BlankedName();
     error DixelClubV2Factory__BlankedSymbol();

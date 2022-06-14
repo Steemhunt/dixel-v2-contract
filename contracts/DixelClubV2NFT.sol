@@ -15,13 +15,6 @@ import "./Shared.sol";
 import "./Constants.sol";
 import "./SVGGenerator.sol"; // inheriting Constants
 
-/**
- * @dev DixelArt NFT token, including:
- *
- *  - ability for holders to burn (destroy) their tokens
- *  - a owner (Dixel contract) that allows for token minting (creation)
- *  - token ID and URI autogeneration
- */
 contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__NotExist();
     error DixelClubV2__Initalized();
