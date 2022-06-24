@@ -512,6 +512,18 @@ contract("DixelClubV2NFT", function(accounts) {
         await expectRevert(this.collection.updateDescription('hello \u0005', { from: alice }), "DixelClubV2__DescriptionContainMalicious");
         await expectRevert(this.collection.updateDescription('hello \u007f', { from: alice }), "DixelClubV2__DescriptionContainMalicious");
       });
+
+      it.only("should allow URL on description", async function() {
+        const newDescription = "Whatever https://website.com/s?hello=1&world=2";
+        await this.collection.updateDescription(newDescription, { from: alice });
+        expect((await this.collection.metaData()).description_).to.equal(newDescription);
+      });
+
+      it.only("should allow an email in description", async function() {
+        const newDescription = "Whatever hello@gmail.com";
+        await this.collection.updateDescription(newDescription, { from: alice });
+        expect((await this.collection.metaData()).description_).to.equal(newDescription);
+      });
     }); // edge case
   }); // update metadata
 

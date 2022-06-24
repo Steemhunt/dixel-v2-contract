@@ -373,6 +373,6 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     // NFT implementation version
     function version() external pure virtual returns (uint16) {
-        return 1;
+        return 2;
     }
 }
