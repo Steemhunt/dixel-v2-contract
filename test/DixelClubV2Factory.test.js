@@ -73,19 +73,19 @@ contract("DixelClubV2Factory", function(accounts) {
       this.collection1 = await DixelClubV2NFT.at(await this.factory.collections("1"));
     });
 
-    it("should be version 1 originally", async function () {
-      expect(await this.collection0.version()).to.be.bignumber.equal("1");
+    it("should be version 2 originally", async function () {
+      expect(await this.collection0.version()).to.be.bignumber.equal("2");
     });
 
-    it("should be version 2 after updateImplementation", async function () {
-      expect(await this.collection1.version()).to.be.bignumber.equal("2");
+    it("should be version 3 after updateImplementation", async function () {
+      expect(await this.collection1.version()).to.be.bignumber.equal("3");
     });
 
-    it("should be stayed as version 2 after one more creation", async function () {
+    it("should be stayed as version 3 after one more creation", async function () {
       await this.factory.createCollection(...this.testParams);
       const collection2 = await DixelClubV2NFT.at(await this.factory.collections("2"));
 
-      expect(await collection2.version()).to.be.bignumber.equal("2");
+      expect(await collection2.version()).to.be.bignumber.equal("3");
     });
   });
 
