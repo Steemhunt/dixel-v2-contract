@@ -34,16 +34,16 @@ npx hardhat test
 ## Contracts
 
 ### Ethereum Testnet (Goerli)
-- DixelClubV2Factory: [0xDA2aE2aAFA6944D16296beD8652cFe909F2B4a15](https://goerli.etherscan.io/address/0xDA2aE2aAFA6944D16296beD8652cFe909F2B4a15#code)
-- DixelClubV2NFT (implementation contract): [0xAcE7409436c6b464bE01c22Af967498822277CEF](https://goerli.etherscan.io/address/0xAcE7409436c6b464bE01c22Af967498822277CEF#code)
+- DixelClubV2Factory: [0xe79D419da8F3625EF9D136F6632E810d3e2e1Fc6](https://goerli.etherscan.io/address/0xe79D419da8F3625EF9D136F6632E810d3e2e1Fc6#code)
+- DixelClubV2NFT (implementation contract): [0x89Ba1a95C1e4CBbF53Bf65953b317eBb47110463](https://goerli.etherscan.io/address/0x89Ba1a95C1e4CBbF53Bf65953b317eBb47110463#code)
 
 ### BSC Testnet
-- DixelClubV2Factory: [0xe413597C3e2DA25c9aE8a5CFdE36935f15727B52](https://testnet.bscscan.com/address/0xe413597C3e2DA25c9aE8a5CFdE36935f15727B52#code)
-- DixelClubV2NFT (implementation contract): [0x8F43f02CF3fa43b58bCd5f85f091252d6Ab33361](https://testnet.bscscan.com/address/0x8F43f02CF3fa43b58bCd5f85f091252d6Ab33361#code)
+- DixelClubV2Factory: [0x5d241D9e59006B7fa5E40F02f08dD679De0841E0](https://testnet.bscscan.com/address/0x5d241D9e59006B7fa5E40F02f08dD679De0841E0#code)
+- DixelClubV2NFT (implementation contract): [0xa280Cde0E2066319629490eB50aABbcC622fc3ef](https://testnet.bscscan.com/address/0xa280Cde0E2066319629490eB50aABbcC622fc3ef#code)
 
 ### Klaytn Testnet (Baobob)
-- DixelClubV2Factory: 0x3f2601B81318329Cff9513379F2B99448B9Edd2C
-- DixelClubV2NFT (implementation contract): 0x06B217830A5213aC470eB9FFc00E19Ade5B088d1
+- DixelClubV2Factory: 0x3F1D6f939BE5b60Fadd2c4586Be286e861558F6b
+- DixelClubV2NFT (implementation contract): 0x0A325d166426aFd2465AD7b0CC0C6Efa2E14E84e
 
 ## Deploy
 ```bash
