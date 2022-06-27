@@ -18,7 +18,10 @@ abstract contract SVGGenerator is Constants {
 
     // NOTE: viewBox -0.5 on top to prevent top side crop issue
     // ref: https://codepen.io/shshaw/post/vector-pixels-svg-optimization-animation-and-understanding-path-data#crazy-pants-optimization-4
-    string private constant HEADER = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 24 24" width="960" height="960" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges">';
+
+    // NOTE: viewbox height 23.999 & preserveAspectRatio="none" to prevent gpas between shapes when it's resized to an indivisible dimensions (e.g. 480x480 -> fine, but 500x500 shows gaps)
+    // ref: https://codepen.io/sydneyitguy/pen/MWVgOjG
+    string private constant HEADER = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 24 23.999" width="960" height="960" preserveAspectRatio="none" shape-rendering="crispEdges">';
     string private constant FOOTER = '</svg>';
 
     function _generateSVG(uint24[PALETTE_SIZE] memory palette, uint8[PIXEL_ARRAY_SIZE] memory pixels) internal pure returns (string memory) {
