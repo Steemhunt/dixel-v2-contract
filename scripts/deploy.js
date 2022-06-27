@@ -26,7 +26,7 @@ async function main() {
   console.log(`Network: ${hre.network.name}`);
   console.log('```');
   console.log(`- DixelClubV2Factory: ${factory.address}`);
-  console.log(`- DixelClubV2NFT (implementation contract): ${nft.address}`);
+  console.log(`- DixelClubV2NFT: ${nft.address}`);
   console.log('```');
 
   console.log(`
