@@ -15,6 +15,14 @@ import "./Shared.sol";
 import "./Constants.sol";
 import "./SVGGenerator.sol"; // inheriting Constants
 
+/* Change Logs
+
+<Version 2>
+1. Added default dimemsions on SVG for better compatibility (Opensea)
+2. Fixed white gapp issues on Safari & iPhone browsers (hack: 25f5e59)
+3. Allow new-line characters on descriptions
+*/
+
 contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__NotExist();
     error DixelClubV2__Initalized();
