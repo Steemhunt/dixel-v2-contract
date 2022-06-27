@@ -1,6 +1,6 @@
 {
   "name": "Dixel Club V2",
-  "version": "2.6.122",
+  "version": "2.6.124",
   "description": "Crowd-sourced pixel art community",
   "main": "index.js",
   "scripts": {
