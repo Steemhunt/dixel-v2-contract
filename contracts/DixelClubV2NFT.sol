@@ -21,6 +21,10 @@ import "./SVGGenerator.sol"; // inheriting Constants
 1. Added default dimemsions on SVG for better compatibility (Opensea)
 2. Fixed white gapp issues on Safari & iPhone browsers (hack: 25f5e59)
 3. Allow new-line characters on descriptions
+
+<Version 3>
+1. Remove JSON string validator (should be done on front-end)
+
 */
 
 contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
@@ -36,7 +40,6 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__InvalidRoyalty(uint256 invalid);
     error DixelClubV2__AlreadyStarted();
     error DixelClubV2__DescriptionTooLong();
-    error DixelClubV2__DescriptionContainMalicious();
     error DixelClubV2__WhiteListValueDoNotMatch(address expected, address actual);
 
     struct EditionData {
@@ -268,7 +271,6 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     function updateDescription(string calldata description) external onlyOwner {
         if (bytes(description).length > 1000) revert DixelClubV2__DescriptionTooLong(); // ~900 gas per character
-        if (!StringUtils.validJSONValue(description)) revert DixelClubV2__DescriptionContainMalicious();
 
         _description = description;
     }
@@ -381,6 +383,6 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     // NFT implementation version
     function version() external pure virtual returns (uint16) {
-        return 2;
+        return 3;
     }
 }
