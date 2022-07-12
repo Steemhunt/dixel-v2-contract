@@ -73,19 +73,19 @@ contract("DixelClubV2Factory", function(accounts) {
       this.collection1 = await DixelClubV2NFT.at(await this.factory.collections("1"));
     });
 
-    it("should be version 2 originally", async function () {
-      expect(await this.collection0.version()).to.be.bignumber.equal("2");
+    it("should be version 3 originally", async function () {
+      expect(await this.collection0.version()).to.be.bignumber.equal("3");
     });
 
-    it("should be version 3 after updateImplementation", async function () {
-      expect(await this.collection1.version()).to.be.bignumber.equal("3");
+    it("should be version 4 after updateImplementation", async function () {
+      expect(await this.collection1.version()).to.be.bignumber.equal("4");
     });
 
-    it("should be stayed as version 3 after one more creation", async function () {
+    it("should be ramained as version 4 after one more creation", async function () {
       await this.factory.createCollection(...this.testParams);
       const collection2 = await DixelClubV2NFT.at(await this.factory.collections("2"));
 
-      expect(await collection2.version()).to.be.bignumber.equal("3");
+      expect(await collection2.version()).to.be.bignumber.equal("4");
     });
   });
 
@@ -145,37 +145,6 @@ contract("DixelClubV2Factory", function(accounts) {
     it("should check if description is over 1,000 characters", async function() {
       this.testParams[2] = [...Array(1001)].map(() => Math.random().toString(36)[2]).join('');
       await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionTooLong");
-    });
-
-    it("should check if name contains an invalid character", async function() {
-      this.testParams[0] = 'Name"';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
-      this.testParams[0] = 'Name\\';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
-      this.testParams[0] = 'Name\u001f';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
-      this.testParams[0] = 'Name\u007f';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__NameContainedMalicious");
-    });
-    it("should check if symbol contains an invalid character", async function() {
-      this.testParams[1] = 'SYMBOL"';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
-      this.testParams[1] = 'SYMBOL\\';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
-      this.testParams[1] = 'SYMBOL\u0000';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
-      this.testParams[1] = 'SYMBOL\u007f';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__SymbolContainedMalicious");
-    });
-    it("should check if description contains an invalid character", async function() {
-      this.testParams[2] = 'what ever "';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
-      this.testParams[2] = 'what ever \\';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
-      this.testParams[2] = 'what ever \u0001';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
-      this.testParams[2] = 'what ever \u007f';
-      await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__DescriptionContainedMalicious");
     });
 
     it("should check if the correct creation fee has sent", async function() {

@@ -1,7 +1,7 @@
 {
   "name": "Dixel Club V2",
-  "version": "2.6.124",
-  "description": "Crowd-sourced pixel art community",
+  "version": "2.7.124",
+  "description": "Pixel NFT Minting Club",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

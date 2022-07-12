@@ -14,9 +14,6 @@ contract DixelClubV2Factory is Constants, Ownable {
     error DixelClubV2Factory__DescriptionTooLong();
     error DixelClubV2Factory__InvalidMaxSupply();
     error DixelClubV2Factory__InvalidRoyalty();
-    error DixelClubV2Factory__NameContainedMalicious();
-    error DixelClubV2Factory__SymbolContainedMalicious();
-    error DixelClubV2Factory__DescriptionContainedMalicious();
     error DixelClubV2Factory__InvalidCreationFee();
     error DixelClubV2Factory__ZeroAddress();
     error DixelClubV2Factory__InvalidFee();
@@ -65,11 +62,6 @@ contract DixelClubV2Factory is Constants, Ownable {
         if(bytes(description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
         if(metaData.maxSupply == 0 || metaData.maxSupply > MAX_SUPPLY) revert DixelClubV2Factory__InvalidMaxSupply();
         if(metaData.royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2Factory__InvalidRoyalty();
-
-        // Validate `symbol`, `name` and `description` to ensure generateJSON() creates a valid JSON
-        if(!StringUtils.validJSONValue(name)) revert DixelClubV2Factory__NameContainedMalicious();
-        if(!StringUtils.validJSONValue(symbol)) revert DixelClubV2Factory__SymbolContainedMalicious();
-        if(!StringUtils.validJSONValue(description)) revert DixelClubV2Factory__DescriptionContainedMalicious();
 
         // Neutralize minting starts date
         if (metaData.mintingBeginsFrom < block.timestamp) {
