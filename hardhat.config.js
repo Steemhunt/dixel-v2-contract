@@ -51,7 +51,7 @@ module.exports = {
     ethmain: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_ETH_API_KEY}`,
       chainId: 1,
-      gasPrice: 38000000000, // 30 gwei
+      gasPrice: 14000000000, // 14 gwei
       blockGasLimit: 29000000, // 29M
       accounts: [process.env.ETH_PRIVATE_KEY]
     },
@@ -77,7 +77,7 @@ module.exports = {
       accounts: [process.env.KLAYTN_TEST_PRIVATE_KEY]
     },
     klaytnmain: {
-      url: `https://public-node-api.klaytnapi.com/v1/cypress`,
+      url: `https://klaytn01.fandom.finance/`,
       chainId: 8217,
       gasPrice: 250000000000, // 250 ston
       blockGasLimit: 60000000, // 60M
@@ -86,7 +86,7 @@ module.exports = {
   },
   gasReporter: {
     currency: 'USD',
-    gasPrice: 25,
+    gasPrice: 10,
     coinmarketcap: process.env.COIN_MARKET_CAP_API
   },
   etherscan: {
