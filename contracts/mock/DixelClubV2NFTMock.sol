@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 contract DixelClubV2NFTMock is DixelClubV2NFT {
     function version() external pure override returns (uint16) {
-        return 4;
+        return 5;
     }
 
     // MARK: - Using a simple array

@@ -18,13 +18,15 @@ import "./SVGGenerator.sol"; // inheriting Constants
 /* Change Logs
 
 <Version 2>
-1. Added default dimemsions on SVG for better compatibility (Opensea)
-2. Fixed white gapp issues on Safari & iPhone browsers (hack: 25f5e59)
+1. Add default dimemsions on SVG for better compatibility (Opensea)
+2. Fix white gapp issues on Safari & iPhone browsers (hack: 25f5e59)
 3. Allow new-line characters on descriptions
 
 <Version 3>
 1. Remove JSON string validator (should be done on front-end)
 
+<Version 4>
+1. Add `mintByOwner` function that can by-pass whitelist, mintingCost, mintingBeginsFrom checks
 */
 
 contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
@@ -109,6 +111,15 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
         _removeWhitelist(whitelistIndex, msg.sender);
 
         _mintWithFees(to, palette);
+    }
+
+    // Give free minting permission to the collection owner because owners can update settings anyway
+    function mintByOwner(address to, uint24[PALETTE_SIZE] calldata palette) external onlyOwner {
+        // By-passing whitelist, mintingCost, mintingBeginsFrom checks
+        // maxSupply is not changeable even by the owner, so it should be checked
+        if(nextTokenId() >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
+
+        _mintNewEdition(to, palette);
     }
 
     function _mintWithFees(address to, uint24[PALETTE_SIZE] calldata palette) private {
@@ -383,6 +394,6 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     // NFT implementation version
     function version() external pure virtual returns (uint16) {
-        return 3;
+        return 4;
     }
 }

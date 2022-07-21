@@ -286,7 +286,7 @@ contract("DixelClubV2NFT", function(accounts) {
     }); // initial states
 
 
-    describe("pagination", async function() {
+    describe("pagination", function() {
       beforeEach(async function() {
         await this.collection.addWhitelist([carol, alice, bob, carol, carol, alice, bob, bob], { from: alice });
         // total 10: a, b, c, a, b, c, c, a, b, b
@@ -333,7 +333,7 @@ contract("DixelClubV2NFT", function(accounts) {
       });
     }); // remove whitelist
 
-    describe("after minting", async function() {
+    describe("after minting", function() {
       beforeEach(async function() {
         // whitelist: [alice, bob]
         await this.collection.mintPrivate(1, bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
@@ -348,7 +348,42 @@ contract("DixelClubV2NFT", function(accounts) {
       });
     }); // after minting
 
-    describe("edge cases", async function() {
+    describe("mintByOwner", function() {
+      it("can be only called by the owner of the collection", async function() {
+        await expectRevert(
+          this.collection.mintByOwner(carol, TEST_INPUT.palette2, { from: bob }),
+          "Ownable: caller is not the owner"
+        );
+      });
+
+      it("can by-pass whitelist and mintingCost", async function() {
+        await this.collection.mintByOwner(carol, TEST_INPUT.palette2, { from: alice });
+        expect(await this.collection.ownerOf(1)).to.equal(carol);
+      });
+
+      it("can by-pass mintingBeginsFrom", async function() {
+        const now = parseInt((new Date()).getTime() / 1000);
+        const collection = await createCollection(this.factory, DixelClubV2NFT, alice, { mintingCost: 0, mintingBeginsFrom: now + 1000 });
+
+        await expectRevert(
+          collection.mintPublic(bob, TEST_INPUT.palette2, { from: bob }),
+          "DixelClubV2__NotStarted"
+        );
+
+        await collection.mintByOwner(bob, TEST_INPUT.palette2, { from: alice });
+        expect(await collection.ownerOf(1)).to.equal(bob);
+      });
+
+      it("can NOT by-pass maxSupply", async function() {
+        const collection = await createCollection(this.factory, DixelClubV2NFT, alice, { maxSupply: 1 });
+        await expectRevert(
+          collection.mintByOwner(bob, TEST_INPUT.palette2, { from: alice }),
+          "DixelClubV2__MaximumMinted"
+        );
+      });
+    }); // mintByOwner
+
+    describe("edge cases", function() {
       it("addWhitelist can be only called by the owner of the collection", async function() {
         await expectRevert(
           this.collection.addWhitelist([bob], { from: bob }),
@@ -377,7 +412,7 @@ contract("DixelClubV2NFT", function(accounts) {
         expect(list).to.deep.equal([alice, bob, bob]);
       });
 
-      it("should return a crrect allowance once duplicated", async function() {
+      it("should return a correct allowance if duplicated", async function() {
         await this.collection.addWhitelist([alice, carol, alice], { from: alice });
         expect(await this.collection.getWhitelistAllowanceLeft(alice)).to.be.bignumber.equal("3");
       });
