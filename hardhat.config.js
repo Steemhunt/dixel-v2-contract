@@ -63,7 +63,7 @@ module.exports = {
       accounts: [process.env.BSC_TEST_PRIVATE_KEY]
     },
     bscmain: {
-      url: `https://bsc-dataseed.binance.org`,
+      url: `https://bsc-dataseed.binance.org/`,
       chainId: 56,
       gasPrice: 5600000000, // 5.2 GWei
       blockGasLimit: 60000000, // 60M
@@ -82,7 +82,35 @@ module.exports = {
       gasPrice: 250000000000, // 250 ston
       blockGasLimit: 60000000, // 60M
       accounts: [process.env.KLAYTN_PRIVATE_KEY]
-    }
+    },
+    okctest: {
+      url: `https://exchaintestrpc.okex.org/`,
+      chainId: 65,
+      gasPrice: 120000000, // 0.12 Gwei
+      blockGasLimit: 2400000, // 2.4M
+      accounts: [process.env.OKX_TEST_PRIVATE_KEY]
+    },
+    okcmain: {
+      url: `https://exchainrpc.okex.org/`,
+      chainId: 66,
+      gasPrice: 120000000, // 0.12 Gwei
+      blockGasLimit: 2400000, // 2.4M
+      accounts: [process.env.OKX_PRIVATE_KEY]
+    },
+    polygontest: {
+      url: `https://rpc-mumbai.maticvigil.com/`,
+      chainId: 80001,
+      gasPrice: 40000000000, // 40 Gwei - https://gasstation-mumbai.matic.today/v2
+      blockGasLimit: 20000000, // 20M
+      accounts: [process.env.POLYGON_TEST_PRIVATE_KEY]
+    },
+    polygonmain: {
+      url: `https://polygon-rpc.com/`,
+      chainId: 137,
+      gasPrice: 40000000000, // 40 Gwei
+      blockGasLimit: 20000000, // 20M
+      accounts: [process.env.POLYGON_PRIVATE_KEY]
+    },
   },
   gasReporter: {
     currency: 'USD',
@@ -94,8 +122,10 @@ module.exports = {
     apiKey: {
         goerli: process.env.ETHERSCAN_API_KEY,
         bscTestnet: process.env.BSCSCAN_API_KEY,
+        polygonMumbai: process.env.POLYGONSCAN_API_KEY,
         mainnet: process.env.ETHERSCAN_API_KEY,
         bsc: process.env.BSCSCAN_API_KEY,
+        polygon: process.env.POLYGONSCAN_API_KEY
     }
   },
   mocha: {

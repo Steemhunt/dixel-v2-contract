@@ -26,7 +26,7 @@ async function main() {
   console.log(`Network: ${hre.network.name}`);
   console.log('```');
   console.log(`- DixelClubV2Factory: ${factory.address}`);
-  console.log(`- DixelClubV2NFT: ${nft.address}`);
+  console.log(`- DixelClubV2NFT (implementation): ${nft.address}`);
   console.log('```');
 
   console.log(`
@@ -45,11 +45,15 @@ main()
 
 /* Deploy script
 
-npx hardhat compile && npx hardhat run --network goerli scripts/deploy.js &&
-npx hardhat compile && npx hardhat run --network bsctest scripts/deploy.js &&
+npx hardhat compile && npx hardhat run --network goerli scripts/deploy.js
+npx hardhat compile && npx hardhat run --network bsctest scripts/deploy.js
 npx hardhat compile && npx hardhat run --network klaytntest scripts/deploy.js
+npx hardhat compile && npx hardhat run --network okctest scripts/deploy.js
+npx hardhat compile && npx hardhat run --network polygontest scripts/deploy.js
 
-npx hardhat compile && npx hardhat run --network ethmain scripts/deploy.js &&
-npx hardhat compile && npx hardhat run --network bscmain scripts/deploy.js &&
+npx hardhat compile && npx hardhat run --network ethmain scripts/deploy.js
+npx hardhat compile && npx hardhat run --network bscmain scripts/deploy.js
 npx hardhat compile && npx hardhat run --network klaytnmain scripts/deploy.js
+npx hardhat compile && npx hardhat run --network okcmain scripts/deploy.js
+npx hardhat compile && npx hardhat run --network polygonmain scripts/deploy.js
 */

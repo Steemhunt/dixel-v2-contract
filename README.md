@@ -37,28 +37,45 @@ Latest version: v2.8.156 / NFT version: 4
 
 ### Ethereum
 - DixelClubV2Factory: [0x66BF6409A52E634262BD04c0005562f229b03778](https://etherscan.io/address/0x66BF6409A52E634262BD04c0005562f229b03778#code)
-- DixelClubV2NFT (implementation contract): [0xDb1dC1d633df2c9075b8270C437832991680DF82](https://etherscan.io/address/0xDb1dC1d633df2c9075b8270C437832991680DF82#code)
+- DixelClubV2NFT (implementation): [0xDb1dC1d633df2c9075b8270C437832991680DF82](https://etherscan.io/address/0xDb1dC1d633df2c9075b8270C437832991680DF82#code)
 
 ### BNB Chain
 - DixelClubV2Factory: [0xB76110E9cb56c0dba1596F3413A6DB9023e36463](https://bscscan.com/address/0xB76110E9cb56c0dba1596F3413A6DB9023e36463#code)
-- DixelClubV2NFT (implementation contract): [0xc4C1D65719C7aBa1Ab5f254Ff17f1806d701448E](https://bscscan.com/address/0xc4C1D65719C7aBa1Ab5f254Ff17f1806d701448E#code)
+- DixelClubV2NFT (implementation): [0xc4C1D65719C7aBa1Ab5f254Ff17f1806d701448E](https://bscscan.com/address/0xc4C1D65719C7aBa1Ab5f254Ff17f1806d701448E#code)
+
+### Polygon
+- DixelClubV2Factory: [0xa8F498E42884677b4055bEE3cc9970f4A8555ff9](https://polygonscan.com/address/0xa8F498E42884677b4055bEE3cc9970f4A8555ff9#code)
+- DixelClubV2NFT: [0x1bD78fD584E315fB0593d643a3E242BC37C4d615](https://polygonscan.com/address/0x1bD78fD584E315fB0593d643a3E242BC37C4d615#code)
 
 ### Klaytn
 - DixelClubV2Factory: 0x31B8eb1d3DcB2C333e5d70cAA022855ffdBD0fDA
-- DixelClubV2NFT (implementation contract): 0x258e69403866CE766A6Df866ca27C1e4B1C8Bde1
+- DixelClubV2NFT (implementation): [0x258e69403866CE766A6Df866ca27C1e4B1C8Bde1
 
+### OKX Chain
+- DixelClubV2Factory: 0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e
+- DixelClubV2NFT (implementation): 0x1f3Af095CDa17d63cad238358837321e95FC5915
 
 ### Ethereum Testnet (Goerli)
 - DixelClubV2Factory: [0x4705d764d68Fb4008644c913dB6f35Da0AD6E47E](https://goerli.etherscan.io/address/0x4705d764d68Fb4008644c913dB6f35Da0AD6E47E#code)
-- DixelClubV2NFT (implementation contract): [0x1b2C94f2442388365525a1783a2a46607CdcF0b0](https://goerli.etherscan.io/address/0x1b2C94f2442388365525a1783a2a46607CdcF0b0#code)
+- DixelClubV2NFT (implementation): [0x1b2C94f2442388365525a1783a2a46607CdcF0b0](https://goerli.etherscan.io/address/0x1b2C94f2442388365525a1783a2a46607CdcF0b0#code)
 
 ### BSC Testnet
 - DixelClubV2Factory: [0xCD18115eA09460658EB6E5B7De8DD9C906024Ac9](https://testnet.bscscan.com/address/0xCD18115eA09460658EB6E5B7De8DD9C906024Ac9#code)
-- DixelClubV2NFT (implementation contract): [0xeb44C6384502eaE510E57d49059BA722E64d48Db](https://testnet.bscscan.com/address/0xeb44C6384502eaE510E57d49059BA722E64d48Db#code)
+- DixelClubV2NFT (implementation): [0xeb44C6384502eaE510E57d49059BA722E64d48Db](https://testnet.bscscan.com/address/0xeb44C6384502eaE510E57d49059BA722E64d48Db#code)
+
+### Polygon Testnet (Mumbai)
+- DixelClubV2Factory: [0x4bF67e5C9baD43DD89dbe8fCAD3c213C868fe881](https://mumbai.polygonscan.com/address/0x4bF67e5C9baD43DD89dbe8fCAD3c213C868fe881#code)
+- DixelClubV2NFT (implementation): [0xbba7de9897F8bB07D5070994efE44B8c203a02A8](https://mumbai.polygonscan.com/address/0xbba7de9897F8bB07D5070994efE44B8c203a02A8#code)
 
 ### Klaytn Testnet (Baobob)
 - DixelClubV2Factory: 0xc827784cbF2EDCbD8874099130721f466113F454
-- DixelClubV2NFT (implementation contract): 0xC62Bbf59db7b6379F968783e7d43e052BC731d83
+- DixelClubV2NFT (implementation): 0xC62Bbf59db7b6379F968783e7d43e052BC731d83
+
+### OKX Chain Testnet
+- DixelClubV2Factory: 0x905F3AE86108c6A3b1a345dACEaef6c4749Ec66a
+- DixelClubV2NFT (implementation): 0x4bF67e5C9baD43DD89dbe8fCAD3c213C868fe881
+
+
 
 ## Deploy
 ```bash
