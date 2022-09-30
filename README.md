@@ -1,24 +1,24 @@
 # Dixel Club V2
 
+[🌏 Official Interface](https://dixel.club/) | [📖 Official Docs](https://docs.dixel.club/)
+
 Pixel Art NFT factory that users can:
 1. Creators: Create a new NFT collection with a 24x24 pixel art canvas with following parameters
     - name
     - symbol
     - description
     - max minting supply (1 - 1,000,000)
-    - minting cost (in native currency: ETH, BNB, KLAY)
+    - minting cost (in native currency: ETH, BNB, KLAY, MATIC, OKT)
     - royalty (receiving address, percentage: 0 - 10%)
     - minting initiation time (unix timestamp)
     - whitelistOnly (boolean, whitelist can be added by the creator later)
     - hidden (boolean, hide the collection from the official main page listing)
 2. Collectors: Mint a new edition on an existing collection with color variations
 
-[🌏 Testnet Demo](https://v2testnet.dixel.club/) - Available on following testnets
+[🧪 Testnet Demo](https://v2testnet.dixel.club/) - Available on following testnets
 - Ethereum Goerli ([Faucet](https://goerli-faucet.mudit.blog/), [Faucet2](https://faucet.paradigm.xyz/))
 - Klayten Baobao ([Faucet](https://baobab.wallet.klaytn.foundation/faucet))
 - BNB Smart Chain ([Faucet](https://testnet.binance.org/faucet-smart))
-
-📖 [Official Docs](https://docs.dixel.club/)
 
 ## Community Audit
 We are holding a community-based security audit with **$10,000 USDT bounty** and we're inviting all developer community!
