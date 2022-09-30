@@ -21,12 +21,10 @@ Pixel Art NFT factory that users can:
 - BNB Smart Chain ([Faucet](https://testnet.binance.org/faucet-smart))
 
 ## Community Audit
-We are holding a community-based security audit with **$10,000 USDT bounty** and we're inviting all developer community!
-If you're willing to participate, please read the instructions below:
+We held a community-based security audit with **$10,000 USDT bounty**  in June 2022
 
-[🛠 Community Audit Guide](https://github.com/Steemhunt/dixel-v2-contract/blob/main/COMMUNITY_AUDIT.md)
-
-Contribution made by **12 June 2022** will be counted
+- 🛠 Announcement: [Community Audit Guide](https://github.com/Steemhunt/dixel-v2-contract/blob/main/COMMUNITY_AUDIT.md)
+- 💰 Result: https://github.com/Steemhunt/dixel-v2-contract/issues/28
 
 ## Run Tests
 ```bash
