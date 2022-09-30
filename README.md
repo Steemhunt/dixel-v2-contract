@@ -18,6 +18,8 @@ Pixel Art NFT factory that users can:
 - Klayten Baobao ([Faucet](https://baobab.wallet.klaytn.foundation/faucet))
 - BNB Smart Chain ([Faucet](https://testnet.binance.org/faucet-smart))
 
+📖 [Official Docs](https://docs.dixel.club/)
+
 ## Community Audit
 We are holding a community-based security audit with **$10,000 USDT bounty** and we're inviting all developer community!
 If you're willing to participate, please read the instructions below:
