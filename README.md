@@ -1,6 +1,6 @@
 # Dixel Club V2
 
-[🌏 Official Interface](https://dixel.club/) | [📖 Official Docs](https://docs.dixel.club/)
+[🌏 Official Interface](https://dixelclub.com/) | [📖 Official Docs](https://docs.dixelclub.com/)
 
 Pixel Art NFT factory that users can:
 1. Creators: Create a new NFT collection with a 24x24 pixel art canvas with following parameters
