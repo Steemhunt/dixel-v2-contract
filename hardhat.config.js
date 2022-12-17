@@ -120,12 +120,12 @@ module.exports = {
   etherscan: {
     // network list: https://github.com/NomicFoundation/hardhat/blob/master/packages/hardhat-etherscan/src/ChainConfig.ts
     apiKey: {
-        goerli: process.env.ETHERSCAN_API_KEY,
-        bscTestnet: process.env.BSCSCAN_API_KEY,
-        polygonMumbai: process.env.POLYGONSCAN_API_KEY,
-        mainnet: process.env.ETHERSCAN_API_KEY,
-        bsc: process.env.BSCSCAN_API_KEY,
-        polygon: process.env.POLYGONSCAN_API_KEY
+      goerli: process.env.ETHERSCAN_API_KEY,
+      bscTestnet: process.env.BSCSCAN_API_KEY,
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY,
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      bsc: process.env.BSCSCAN_API_KEY,
+      polygon: process.env.POLYGONSCAN_API_KEY
     }
   },
   mocha: {
