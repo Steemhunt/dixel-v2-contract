@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 abstract contract Constants {
+    // FIXME: These variables should be internal, so they don't appear in each NFT's interface.
     uint256 public constant MAX_SUPPLY = 1000000; // 1M hardcap max
     uint256 public constant MAX_ROYALTY_FRACTION = 1000; // 10%
     uint256 public constant FRICTION_BASE = 10000;
