@@ -40,8 +40,8 @@ Latest version: v2.8.156 / NFT version: 4
 - DixelClubV2NFT (implementation): [0xDb1dC1d633df2c9075b8270C437832991680DF82](https://etherscan.io/address/0xDb1dC1d633df2c9075b8270C437832991680DF82#code)
 
 ## Base
-- DixelClubV2Factory: [0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e](https://etherscan.io/address/0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e#code)
-- DixelClubV2NFT (implementation): [0x1f3Af095CDa17d63cad238358837321e95FC5915](https://etherscan.io/address/0x1f3Af095CDa17d63cad238358837321e95FC5915#code)
+- DixelClubV2Factory: [0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e](https://basescan.io/address/0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e#code)
+- DixelClubV2NFT (implementation): [0x1f3Af095CDa17d63cad238358837321e95FC5915](https://basescan.io/address/0x1f3Af095CDa17d63cad238358837321e95FC5915#code)
 
 ### BNB Chain
 - DixelClubV2Factory: [0xB76110E9cb56c0dba1596F3413A6DB9023e36463](https://bscscan.com/address/0xB76110E9cb56c0dba1596F3413A6DB9023e36463#code)
