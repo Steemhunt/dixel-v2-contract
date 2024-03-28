@@ -56,4 +56,5 @@ npx hardhat compile && npx hardhat run --network bscmain scripts/deploy.js
 npx hardhat compile && npx hardhat run --network klaytnmain scripts/deploy.js
 npx hardhat compile && npx hardhat run --network okcmain scripts/deploy.js
 npx hardhat compile && npx hardhat run --network polygonmain scripts/deploy.js
+npx hardhat compile && npx hardhat run --network base scripts/deploy.js
 */
