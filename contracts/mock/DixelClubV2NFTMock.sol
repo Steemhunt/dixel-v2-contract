@@ -7,18 +7,20 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 contract DixelClubV2NFTMock is DixelClubV2NFT {
     function version() external pure override returns (uint16) {
-        return 5;
+        return 6;
     }
 
     // MARK: - Using a simple array
     // add: O(1) / remove: O(n) / space: O(n)
 
     address[] private _whitelist1;
+
     function addWhitelist_SimpleArray(address[] calldata list) external onlyOwner {
         for (uint256 i; i < list.length; i++) {
             _whitelist1.push(list[i]);
         }
     }
+
     function _removeWhitelist_SimpleArray(address wallet) private {
         for (uint256 i; i < _whitelist1.length; i++) {
             if (_whitelist1[i] == wallet) {
@@ -29,11 +31,13 @@ contract DixelClubV2NFTMock is DixelClubV2NFT {
             }
         }
     }
+
     function removeWhitelist_SimpleArray(address[] calldata list) external onlyOwner {
         for (uint256 i; i < list.length; i++) {
             _removeWhitelist_SimpleArray(list[i]);
         }
     }
+
     function getWhitelistCount_SimpleArray() external view returns (uint256) {
         return _whitelist1.length;
     }
@@ -49,11 +53,13 @@ contract DixelClubV2NFTMock is DixelClubV2NFT {
             _whitelist2.set(list[i], 1); // assume all list are unique to make the test simple
         }
     }
+
     function removeWhitelist_EnumerableMap(address[] calldata list) external onlyOwner {
         for (uint256 i; i < list.length; i++) {
             _whitelist2.set(list[i], 0);
         }
     }
+
     function getWhitelistCount_EnumerableMap() external view returns (uint256 count) {
         uint256 length = _whitelist2.length();
         for (uint256 i = 0; i < length; i++) {
@@ -98,6 +104,7 @@ contract DixelClubV2NFTMock is DixelClubV2NFT {
 
         delete _whitelistData3[address(0)];
     }
+
     function _removeWhitelist_CustomMap(address wallet) private {
         PositionCount storage pc = _whitelistData3[wallet];
         if (--pc.count == 0 && pc.init == true) {
@@ -110,19 +117,20 @@ contract DixelClubV2NFTMock is DixelClubV2NFT {
             delete _whitelistData3[wallet];
         }
     }
+
     function removeWhitelist_CustomMap(address[] calldata list) external onlyOwner {
         uint256 length = list.length;
-        for (uint256 i; i != length;) {
+        for (uint256 i; i != length; ) {
             _removeWhitelist_CustomMap(list[i]);
             unchecked {
                 ++i;
             }
         }
     }
+
     function getWhitelistCount_CustomMap() external view returns (uint256) {
         return _whitelist3.length;
     }
-
 
     // TODO: Merkle Tree
     // - How should we store the original address data on-chain?

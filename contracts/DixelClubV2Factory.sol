@@ -116,4 +116,23 @@ contract DixelClubV2Factory is Constants, Ownable {
     function collectionCount() external view returns (uint256) {
         return collections.length;
     }
+
+    function getCollections(uint256 offset, uint256 limit) external view returns (address[] memory list) {
+        unchecked {
+            address[] memory clone = collections; // gas saving
+            uint256 length = clone.length; // gas saving
+            uint256 count = limit;
+
+            if (offset >= length) {
+                return list; // empty list
+            } else if (offset + limit > length) {
+                count = length - offset;
+            }
+
+            list = new address[](count);
+            for (uint256 i = 0; i != count; ++i) {
+                list[i] = clone[offset + i];
+            }
+        }
+    }
 }

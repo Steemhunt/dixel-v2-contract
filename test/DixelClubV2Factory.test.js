@@ -73,11 +73,11 @@ contract("DixelClubV2Factory", function(accounts) {
       this.collection1 = await DixelClubV2NFT.at(await this.factory.collections("1"));
     });
 
-    it("should be version 4 originally", async function () {
+    it("should be version 5 originally", async function () {
       expect(await this.collection0.version()).to.be.bignumber.equal("4");
     });
 
-    it("should be version 5 after updateImplementation", async function () {
+    it("should be version 6 after updateImplementation", async function () {
       expect(await this.collection1.version()).to.be.bignumber.equal("5");
     });
 
@@ -283,4 +283,25 @@ contract("DixelClubV2Factory", function(accounts) {
       // Other NFT tests will be done on DixelClubV2NFT.test.js
     });
   }); // create a collection
-});
+
+  describe("getCollections", function() {
+    beforeEach(async function() {
+      await this.factory.createCollection(...this.testParams);
+      await this.factory.createCollection(...this.testParams);
+      await this.factory.createCollection(...this.testParams);
+      this.collection0 = await DixelClubV2NFT.at(await this.factory.collections("0"));
+      this.collection1 = await DixelClubV2NFT.at(await this.factory.collections("1"));
+      this.collection2 = await DixelClubV2NFT.at(await this.factory.collections("2"));
+    });
+
+    it("should return all results", async function() {
+      const list = await this.factory.getCollections(0, 100);
+      expect(list).to.deep.equal([this.collection0.address, this.collection1.address, this.collection2.address]);
+    });
+
+    it("should return correct paginated results", async function() {
+      const list = await this.factory.getCollections(0, 2);
+      expect(list).to.deep.equal([this.collection0.address, this.collection1.address]);
+    });
+  });
+}); // DixelClubV2Factory
