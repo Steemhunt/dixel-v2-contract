@@ -56,12 +56,12 @@ contract DixelClubV2Factory is Constants, Ownable {
         uint24[PALETTE_SIZE] calldata palette,
         uint8[PIXEL_ARRAY_SIZE] calldata pixels
     ) external payable returns (address) {
-        if(msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
-        if(bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
-        if(bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();
-        if(bytes(description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
-        if(metaData.maxSupply == 0 || metaData.maxSupply > MAX_SUPPLY) revert DixelClubV2Factory__InvalidMaxSupply();
-        if(metaData.royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2Factory__InvalidRoyalty();
+        if (msg.value != creationFee) revert DixelClubV2Factory__InvalidCreationFee();
+        if (bytes(name).length == 0) revert DixelClubV2Factory__BlankedName();
+        if (bytes(symbol).length == 0) revert DixelClubV2Factory__BlankedSymbol();
+        if (bytes(description).length > 1000) revert DixelClubV2Factory__DescriptionTooLong(); // ~900 gas per character
+        if (metaData.maxSupply == 0 || metaData.maxSupply > MAX_SUPPLY) revert DixelClubV2Factory__InvalidMaxSupply();
+        if (metaData.royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2Factory__InvalidRoyalty();
 
         // Neutralize minting starts date
         if (metaData.mintingBeginsFrom < block.timestamp) {
@@ -70,7 +70,7 @@ contract DixelClubV2Factory is Constants, Ownable {
 
         if (creationFee > 0) {
             // Send fee to the beneficiary
-            (bool sent, ) = beneficiary.call{ value: creationFee }("");
+            (bool sent, ) = beneficiary.call{value: creationFee}("");
             require(sent, "CREATION_FEE_TRANSFER_FAILED");
         }
 
@@ -98,17 +98,17 @@ contract DixelClubV2Factory is Constants, Ownable {
     }
 
     function updateBeneficiary(address newAddress) external onlyOwner {
-      if(newAddress == address(0)) revert DixelClubV2Factory__ZeroAddress();
-      beneficiary = newAddress;
+        if (newAddress == address(0)) revert DixelClubV2Factory__ZeroAddress();
+        beneficiary = newAddress;
     }
 
     function updateMintingFee(uint256 newMintingFee) external onlyOwner {
-      if(newMintingFee > FRICTION_BASE) revert DixelClubV2Factory__InvalidFee();
-      mintingFee = newMintingFee;
+        if (newMintingFee > FRICTION_BASE) revert DixelClubV2Factory__InvalidFee();
+        mintingFee = newMintingFee;
     }
 
     function updateCreationFee(uint256 newCreationFee) external onlyOwner {
-      creationFee = newCreationFee;
+        creationFee = newCreationFee;
     }
 
     // MARK: - Utility functions
