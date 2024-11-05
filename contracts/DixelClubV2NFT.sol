@@ -27,6 +27,9 @@ import "./SVGGenerator.sol"; // inheriting Constants
 
 <Version 4>
 1. Add `mintByOwner` function that can by-pass whitelist, mintingCost, mintingBeginsFrom checks
+
+<Version 5>
+1. Hack to fix race condition on whitelist
 */
 
 contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
@@ -78,7 +81,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
         uint24[PALETTE_SIZE] calldata palette_,
         uint8[PIXEL_ARRAY_SIZE] calldata pixels_
     ) external {
-        if(_initializedAt != 0) revert DixelClubV2__Initalized();
+        if (_initializedAt != 0) revert DixelClubV2__Initalized();
         _initializedAt = uint40(block.timestamp);
 
         _factory = IDixelClubV2Factory(msg.sender);
@@ -100,16 +103,22 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     }
 
     function mintPublic(address to, uint24[PALETTE_SIZE] calldata palette) external payable {
-        if(_metaData.whitelistOnly) revert DixelClubV2__PrivateCollection();
+        if (_metaData.whitelistOnly) revert DixelClubV2__PrivateCollection();
 
         _mintWithFees(to, palette);
     }
 
     function mintPrivate(uint256 whitelistIndex, address to, uint24[PALETTE_SIZE] calldata palette) external payable {
-        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+        if (!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+
+        // When race-condition happens, the whitelist index might be changed by other minting
+        // In this case, retry with finding the correct index instead of reverting the transaction
+        if (_whitelist[whitelistIndex] != msg.sender) {
+            // If index is wrong, try to find correct index
+            whitelistIndex = getWhitelistIndex(msg.sender);
+        }
 
         _removeWhitelist(whitelistIndex, msg.sender);
-
         _mintWithFees(to, palette);
     }
 
@@ -117,7 +126,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     function mintByOwner(address to, uint24[PALETTE_SIZE] calldata palette) external onlyOwner {
         // By-passing whitelist, mintingCost, mintingBeginsFrom checks
         // maxSupply is not changeable even by the owner, so it should be checked
-        if(nextTokenId() >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
+        if (nextTokenId() >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
 
         _mintNewEdition(to, palette);
     }
@@ -125,18 +134,19 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     function _mintWithFees(address to, uint24[PALETTE_SIZE] calldata palette) private {
         uint256 mintingCost = uint256(_metaData.mintingCost);
 
-        if(msg.value != mintingCost) revert DixelClubV2__InvalidCost(mintingCost, msg.value);
-        if(nextTokenId() >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
-        if(uint40(block.timestamp) < _metaData.mintingBeginsFrom) revert DixelClubV2__NotStarted(_metaData.mintingBeginsFrom, uint40(block.timestamp));
+        if (msg.value != mintingCost) revert DixelClubV2__InvalidCost(mintingCost, msg.value);
+        if (nextTokenId() >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
+        if (uint40(block.timestamp) < _metaData.mintingBeginsFrom)
+            revert DixelClubV2__NotStarted(_metaData.mintingBeginsFrom, uint40(block.timestamp));
 
         if (mintingCost > 0) {
             // Send fee to the beneficiary
             uint256 fee = (mintingCost * _factory.mintingFee()) / FRICTION_BASE;
-            (bool sent, ) = (_factory.beneficiary()).call{ value: fee }("");
+            (bool sent, ) = (_factory.beneficiary()).call{value: fee}("");
             require(sent, "FEE_TRANSFER_FAILED");
 
             // Send the rest of minting cost to the collection creator
-            (bool sent2, ) = (owner()).call{ value: mintingCost - fee }("");
+            (bool sent2, ) = (owner()).call{value: mintingCost - fee}("");
             require(sent2, "MINTING_COST_TRANSFER_FAILED");
         }
 
@@ -157,7 +167,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     }
 
     function burn(uint256 tokenId) external {
-        if(!_isApprovedOrOwner(msg.sender, tokenId)) revert DixelClubV2__NotApproved(); // This will check existence of token
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert DixelClubV2__NotApproved(); // This will check existence of token
 
         delete _editionData[tokenId];
         _burn(tokenId);
@@ -180,10 +190,10 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     // @dev Maximum length of list parameter can be limited by block gas limit of blockchain
     // @notice Duplicated address input means multiple allowance
     function addWhitelist(address[] calldata list) external onlyOwner {
-        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+        if (!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
 
         uint256 length = list.length; // gas saving
-        for (uint256 i; i != length;) {
+        for (uint256 i; i != length; ) {
             _whitelist.push(list[i]); // O(1) for adding 1 address
             unchecked {
                 ++i;
@@ -192,7 +202,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     }
 
     function _removeWhitelist(uint256 index, address value) private {
-        if(!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
+        if (!_metaData.whitelistOnly) revert DixelClubV2__PublicCollection();
         if (_whitelist[index] != value) revert DixelClubV2__WhiteListValueDoNotMatch(value, _whitelist[index]);
 
         _whitelist[index] = _whitelist[_whitelist.length - 1]; // put the last element into the delete index
@@ -248,7 +258,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     }
 
     // @dev utility function for front-end, that can be reverted if the list is too big
-    function getWhitelistIndex(address wallet) external view returns (uint256) {
+    function getWhitelistIndex(address wallet) public view returns (uint256) {
         unchecked {
             address[] memory clone = _whitelist; // gas saving
             uint256 length = clone.length; // gas saving
@@ -262,12 +272,18 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
         }
     }
 
-
     // MARK: - Update metadata
 
-    function updateMetadata(bool whitelistOnly, bool hidden, uint24 royaltyFriction, uint40 mintingBeginsFrom, uint152 mintingCost) external onlyOwner {
-        if(royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2__InvalidRoyalty(royaltyFriction);
-        if(_metaData.mintingBeginsFrom != mintingBeginsFrom && uint40(block.timestamp) >= _metaData.mintingBeginsFrom) revert DixelClubV2__AlreadyStarted();
+    function updateMetadata(
+        bool whitelistOnly,
+        bool hidden,
+        uint24 royaltyFriction,
+        uint40 mintingBeginsFrom,
+        uint152 mintingCost
+    ) external onlyOwner {
+        if (royaltyFriction > MAX_ROYALTY_FRACTION) revert DixelClubV2__InvalidRoyalty(royaltyFriction);
+        if (_metaData.mintingBeginsFrom != mintingBeginsFrom && uint40(block.timestamp) >= _metaData.mintingBeginsFrom)
+            revert DixelClubV2__AlreadyStarted();
 
         _metaData.whitelistOnly = whitelistOnly;
         if (!_metaData.whitelistOnly) {
@@ -297,35 +313,49 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     }
 
     function tokenJSON(uint256 tokenId) public view checkTokenExists(tokenId) returns (string memory) {
-        return string(abi.encodePacked(
-            '{"name":"',
-            _symbol, ' #', ColorUtils.uint2str(tokenId),
-            '","description":"',
-            _description,
-            '","external_url":"https://dixel.club/collection/',
-            ColorUtils.uint2str(block.chainid), '/', StringUtils.address2str(address(this)), '/', ColorUtils.uint2str(tokenId),
-            '","image":"',
-            generateBase64SVG(tokenId),
-            '"}'
-        ));
+        return
+            string(
+                abi.encodePacked(
+                    '{"name":"',
+                    _symbol,
+                    " #",
+                    ColorUtils.uint2str(tokenId),
+                    '","description":"',
+                    _description,
+                    '","external_url":"https://dixel.club/collection/',
+                    ColorUtils.uint2str(block.chainid),
+                    "/",
+                    StringUtils.address2str(address(this)),
+                    "/",
+                    ColorUtils.uint2str(tokenId),
+                    '","image":"',
+                    generateBase64SVG(tokenId),
+                    '"}'
+                )
+            );
     }
 
     function contractJSON() public view returns (string memory) {
-        return string(abi.encodePacked(
-            '{"name":"',
-            _name,
-            '","description":"',
-            _description,
-            '","image":"',
-            generateBase64SVG(0),
-            '","external_link":"https://dixel.club/collection/',
-            ColorUtils.uint2str(block.chainid), '/', StringUtils.address2str(address(this)),
-            '","seller_fee_basis_points":"',
-            ColorUtils.uint2str(_metaData.royaltyFriction),
-            '","fee_recipient":"',
-            StringUtils.address2str(owner()),
-            '"}'
-        ));
+        return
+            string(
+                abi.encodePacked(
+                    '{"name":"',
+                    _name,
+                    '","description":"',
+                    _description,
+                    '","image":"',
+                    generateBase64SVG(0),
+                    '","external_link":"https://dixel.club/collection/',
+                    ColorUtils.uint2str(block.chainid),
+                    "/",
+                    StringUtils.address2str(address(this)),
+                    '","seller_fee_basis_points":"',
+                    ColorUtils.uint2str(_metaData.royaltyFriction),
+                    '","fee_recipient":"',
+                    StringUtils.address2str(owner()),
+                    '"}'
+                )
+            );
     }
 
     function exists(uint256 tokenId) external view returns (bool) {
@@ -337,20 +367,24 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
         hidden_ = _metaData.hidden;
     }
 
-    function metaData() external view returns (
-        string memory name_,
-        bool whitelistOnly_,
-        uint24 maxSupply_,
-        uint24 royaltyFriction_,
-        uint40 mintingBeginsFrom_,
-        uint168 mintingCost_,
-        string memory description_,
-        uint256 nextTokenId_,
-        uint256 totalSupply_,
-        address owner_,
-        uint8[PIXEL_ARRAY_SIZE] memory pixels_,
-        uint24[PALETTE_SIZE] memory defaultPalette_
-    ) {
+    function metaData()
+        external
+        view
+        returns (
+            string memory name_,
+            bool whitelistOnly_,
+            uint24 maxSupply_,
+            uint24 royaltyFriction_,
+            uint40 mintingBeginsFrom_,
+            uint168 mintingCost_,
+            string memory description_,
+            uint256 nextTokenId_,
+            uint256 totalSupply_,
+            address owner_,
+            uint8[PIXEL_ARRAY_SIZE] memory pixels_,
+            uint24[PALETTE_SIZE] memory defaultPalette_
+        )
+    {
         name_ = name();
         whitelistOnly_ = _metaData.whitelistOnly;
         maxSupply_ = _metaData.maxSupply;
@@ -394,6 +428,6 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     // NFT implementation version
     function version() external pure virtual returns (uint16) {
-        return 4;
+        return 5;
     }
 }

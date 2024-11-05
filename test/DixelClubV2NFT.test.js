@@ -348,6 +348,29 @@ contract("DixelClubV2NFT", function(accounts) {
       });
     }); // after minting
 
+    describe("race condition tolerance", function() {
+      beforeEach(async function() {
+        await this.collection.mintPrivate(0, bob, TEST_INPUT.palette2, { from: bob, value: this.mintingCost });
+      });
+
+      it("should succeed even with a incorrect whitelist index", async function() {
+        expect(await this.collection.ownerOf(1)).to.equal(bob);
+      });
+
+      it("should decrease the allowance after minting", async function() {
+        expect(await this.collection.getWhitelistAllowanceLeft(bob)).to.be.bignumber.equal("0");
+      });
+
+      it("should return a correct whitelist left after 1 minting", async function() {
+        expect(await this.collection.getWhitelistCount()).to.be.bignumber.equal("1");
+      });
+
+      it("should return only alice in whitelist", async function() {
+        const list = await this.collection.getAllWhitelist("0", "100");
+        expect(list).to.deep.equal([alice]);
+      });
+    }); // race condition tolerance
+
     describe("mintByOwner", function() {
       it("can be only called by the owner of the collection", async function() {
         await expectRevert(
