@@ -4,7 +4,6 @@
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
-const { ether } = require("@openzeppelin/test-helpers");
 
 async function main() {
   const accounts = await hre.ethers.getSigners();

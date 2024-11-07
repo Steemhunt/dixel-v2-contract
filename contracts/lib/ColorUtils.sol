@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity =0.8.28;
+pragma solidity =0.8.27;
 
 library ColorUtils {
     function uint2str(uint256 i) internal pure returns (string memory) {

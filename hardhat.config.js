@@ -28,11 +28,11 @@ require("hardhat-interface-generator");
  */
 module.exports = {
   solidity: {
-    version: '0.8.28',
+    version: '0.8.27',
     settings: {
       optimizer: {
         enabled: true, // argv.enableGasReport || argv.compileMode === 'production',
-        runs: 5000,
+        runs: 1500,
       },
     },
   },

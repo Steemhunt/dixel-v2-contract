@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
-pragma solidity =0.8.28;
+pragma solidity =0.8.27;
 
 import "base64-sol/base64.sol";
 import "./lib/ColorUtils.sol";

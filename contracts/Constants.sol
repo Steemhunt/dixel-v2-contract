@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
-pragma solidity =0.8.28;
+pragma solidity =0.8.27;
 
 abstract contract Constants {
     uint256 internal constant MAX_SUPPLY = 1000000; // 1M hardcap max

@@ -1,5 +1,4 @@
 const hre = require("hardhat");
-const { ether } = require("@openzeppelin/test-helpers");
 
 async function main() {
   const accounts = await hre.ethers.getSigners();

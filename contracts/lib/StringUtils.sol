@@ -2,7 +2,7 @@
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-pragma solidity =0.8.28;
+pragma solidity =0.8.27;
 
 library StringUtils {
     function address2str(address addr) internal pure returns (string memory) {

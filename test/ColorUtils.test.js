@@ -1,4 +1,4 @@
-const { ether, constants, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { constants, expectRevert } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256, ZERO_ADDRESS } = constants;
 const { expect } = require("chai");
 
