@@ -5,28 +5,19 @@ async function main() {
   const config = {
     ethmain: {
       factory: '0x66BF6409A52E634262BD04c0005562f229b03778',
-      // fee: ether('0.0')
-      fee: ether('0.01')
+      fee: ether('0.000111') // 0.000111 ETH (~$0.3)
     },
     klaytnmain: {
       factory: '0x31B8eb1d3DcB2C333e5d70cAA022855ffdBD0fDA',
-      // fee: ether('0')
-      fee: ether('65')
+      fee: ether('3') // 3 KLAY (~$0.3)
     },
     bscmain: {
       factory: '0xB76110E9cb56c0dba1596F3413A6DB9023e36463',
-      // fee: ether('0')
-      fee: ether('0.05')
-    },
-    okcmain: {
-      factory: '0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e',
-      // fee: ether('0')
-      fee: ether('1')
+      fee: ether('0.0005') // 0.0005 BNB (~$0.3)
     },
     polygonmain: {
       factory: '0xa8F498E42884677b4055bEE3cc9970f4A8555ff9',
-      // fee: ether('0')
-      fee: ether('20')
+      fee: ether('1') // 1 POL (~$0.3)
     },
   };
 
@@ -50,7 +41,6 @@ main()
   });
 
 // npx hardhat run --network klaytnmain scripts/set-creation-fee.js
-// npx hardhat run --network bscmain scripts/set-creation-fee.js
-// npx hardhat run --network okcmain scripts/set-creation-fee.js
 // npx hardhat run --network polygonmain scripts/set-creation-fee.js
+// npx hardhat run --network bscmain scripts/set-creation-fee.js
 // npx hardhat run --network ethmain scripts/set-creation-fee.js

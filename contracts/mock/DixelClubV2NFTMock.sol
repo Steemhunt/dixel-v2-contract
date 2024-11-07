@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.13;
+pragma solidity =0.8.28;
 
 import "../DixelClubV2NFT.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";

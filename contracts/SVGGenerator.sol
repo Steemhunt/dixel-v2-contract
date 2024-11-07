@@ -1,38 +1,40 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
-pragma solidity ^0.8.13;
+pragma solidity =0.8.28;
 
 import "base64-sol/base64.sol";
 import "./lib/ColorUtils.sol";
 import "./Constants.sol";
 
 /**
-* @title Dixel SVG image generator
-*/
+ * @title Dixel SVG image generator
+ */
 abstract contract SVGGenerator is Constants {
-
     // Using paths for each palette color (speed: 700-2300 / size: 1-5KB)
     // - pros: faster average speed, smaller svg size (over 50%)
     // - cons: slower worst-case speed
-
 
     // NOTE: viewBox -0.5 on top to prevent top side crop issue
     // ref: https://codepen.io/shshaw/post/vector-pixels-svg-optimization-animation-and-understanding-path-data#crazy-pants-optimization-4
 
     // NOTE: viewbox height 23.999 & preserveAspectRatio="none" to prevent gpas between shapes when it's resized to an indivisible dimensions (e.g. 480x480 -> fine, but 500x500 shows gaps)
     // ref: https://codepen.io/sydneyitguy/pen/MWVgOjG
-    string private constant HEADER = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 24 23.999" width="960" height="960" preserveAspectRatio="none" shape-rendering="crispEdges">';
-    string private constant FOOTER = '</svg>';
+    string private constant HEADER =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 24 23.999" width="960" height="960" preserveAspectRatio="none" shape-rendering="crispEdges">';
+    string private constant FOOTER = "</svg>";
 
-    function _generateSVG(uint24[PALETTE_SIZE] memory palette, uint8[PIXEL_ARRAY_SIZE] memory pixels) internal pure returns (string memory) {
+    function _generateSVG(
+        uint24[PALETTE_SIZE] memory palette,
+        uint8[PIXEL_ARRAY_SIZE] memory pixels
+    ) internal pure returns (string memory) {
         string[PALETTE_SIZE] memory paths;
 
-        for (uint256 y; y < CANVAS_SIZE;) {
-            uint256 prev = pixels[y * CANVAS_SIZE / 2] & 15; // prev pixel color. see comment below. x=0 so no shifting needed.
+        for (uint256 y; y < CANVAS_SIZE; ) {
+            uint256 prev = pixels[(y * CANVAS_SIZE) / 2] & 15; // prev pixel color. see comment below. x=0 so no shifting needed.
             paths[prev] = string(abi.encodePacked(paths[prev], "M0 ", ColorUtils.uint2str(y)));
             uint256 width = 1;
 
-            for (uint256 x = 1; x < CANVAS_SIZE;) {
+            for (uint256 x = 1; x < CANVAS_SIZE; ) {
                 /*
                     Pixels array: we're packing 2 pixels into each uint8.
                     So pixels[y * CANVAS_SIZE/2 + x/2] contains pixels (x,y) and (x+1,y).
@@ -40,7 +42,7 @@ abstract contract SVGGenerator is Constants {
                     The 4 leftmost bits are (x+1,y), so to extract that value we shift pixels[y * CANVAS_SIZE/2 + x/2]
                         4 places to the right, and then mask it with 15 ("00001111").
                  */
-                uint256 current = (pixels[y * CANVAS_SIZE/2 + x/2] >> (4*(x%2))) & 15; // current pixel color.
+                uint256 current = (pixels[(y * CANVAS_SIZE) / 2 + x / 2] >> (4 * (x % 2))) & 15; // current pixel color.
 
                 if (prev == current) {
                     width++;
@@ -48,7 +50,9 @@ abstract contract SVGGenerator is Constants {
                     paths[prev] = string(abi.encodePacked(paths[prev], "h", ColorUtils.uint2str(width)));
                     width = 1;
 
-                    paths[current] = string(abi.encodePacked(paths[current], "M", ColorUtils.uint2str(x), " ", ColorUtils.uint2str(y)));
+                    paths[current] = string(
+                        abi.encodePacked(paths[current], "M", ColorUtils.uint2str(x), " ", ColorUtils.uint2str(y))
+                    );
                 }
 
                 if (x == CANVAS_SIZE - 1) {
@@ -67,9 +71,18 @@ abstract contract SVGGenerator is Constants {
         }
 
         string memory joined;
-        for (uint256 i; i < PALETTE_SIZE;) {
+        for (uint256 i; i < PALETTE_SIZE; ) {
             if (bytes(paths[i]).length > 0) {
-                joined = string(abi.encodePacked(joined, '<path stroke="#', ColorUtils.uint2hex(palette[i]), '" d="', paths[i], '"/>'));
+                joined = string(
+                    abi.encodePacked(
+                        joined,
+                        '<path stroke="#',
+                        ColorUtils.uint2hex(palette[i]),
+                        '" d="',
+                        paths[i],
+                        '"/>'
+                    )
+                );
             }
             unchecked {
                 ++i;
@@ -107,7 +120,11 @@ abstract contract SVGGenerator is Constants {
     }
     */
 
-    function _generateBase64SVG(uint24[PALETTE_SIZE] memory palette, uint8[PIXEL_ARRAY_SIZE] memory pixels) internal pure returns (string memory) {
-        return string(abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(bytes(_generateSVG(palette, pixels)))));
+    function _generateBase64SVG(
+        uint24[PALETTE_SIZE] memory palette,
+        uint8[PIXEL_ARRAY_SIZE] memory pixels
+    ) internal pure returns (string memory) {
+        return
+            string(abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(bytes(_generateSVG(palette, pixels)))));
     }
 }
