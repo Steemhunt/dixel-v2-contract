@@ -3,10 +3,11 @@ const { ether } = require("@openzeppelin/test-helpers");
 
 async function main() {
   const config = {
-    ethmain: {
-      factory: '0x66BF6409A52E634262BD04c0005562f229b03778',
-      fee: ether('0.000111') // 0.000111 ETH (~$0.3)
-    },
+    // ethmain: {
+    //   factory: '0x66BF6409A52E634262BD04c0005562f229b03778',
+    //   fee: ether('0.000111') // 0.000111 ETH (~$0.3)
+    // },
+    // same for all ETH based chains
     klaytnmain: {
       factory: '0x31B8eb1d3DcB2C333e5d70cAA022855ffdBD0fDA',
       fee: ether('3') // 3 KLAY (~$0.3)
@@ -29,8 +30,11 @@ async function main() {
   const tx = await factory.updateCreationFee(config[hre.network.name].fee.toString());
   await tx.wait(2);
 
+  const tx2 = await factory.updateFlatFee(config[hre.network.name].fee.toString());
+  await tx2.wait(2);
+
   const updatedFee = await factory.creationFee();
-  console.log(`Creation fee updated on ${hre.network.name} = ${updatedFee / 1e18}`);
+  console.log(`Creation fee and flat fee updated on ${hre.network.name} = ${updatedFee / 1e18}`);
 }
 
 main()
@@ -43,4 +47,3 @@ main()
 // npx hardhat run --network klaytnmain scripts/set-creation-fee.js
 // npx hardhat run --network polygonmain scripts/set-creation-fee.js
 // npx hardhat run --network bscmain scripts/set-creation-fee.js
-// npx hardhat run --network ethmain scripts/set-creation-fee.js

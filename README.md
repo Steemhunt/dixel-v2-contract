@@ -35,25 +35,29 @@ npx hardhat test
 Latest version: v2.8.156 / NFT version: 4
 
 
-### Ethereum
+### Ethereum - TODO: upgrade
 - DixelClubV2Factory: [0x66BF6409A52E634262BD04c0005562f229b03778](https://etherscan.io/address/0x66BF6409A52E634262BD04c0005562f229b03778#code)
 - DixelClubV2NFT (implementation): [0xDb1dC1d633df2c9075b8270C437832991680DF82](https://etherscan.io/address/0xDb1dC1d633df2c9075b8270C437832991680DF82#code)
 
-### Base
+### Base - TODO: upgrade
 - DixelClubV2Factory: [0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e](https://basescan.io/address/0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e#code)
 - DixelClubV2NFT (implementation): [0x1f3Af095CDa17d63cad238358837321e95FC5915](https://basescan.io/address/0x1f3Af095CDa17d63cad238358837321e95FC5915#code)
 
-### BNB Chain
+### BNB Chain - TODO: upgrade
 - DixelClubV2Factory: [0xB76110E9cb56c0dba1596F3413A6DB9023e36463](https://bscscan.com/address/0xB76110E9cb56c0dba1596F3413A6DB9023e36463#code)
 - DixelClubV2NFT (implementation): [0xc4C1D65719C7aBa1Ab5f254Ff17f1806d701448E](https://bscscan.com/address/0xc4C1D65719C7aBa1Ab5f254Ff17f1806d701448E#code)
 
-### Polygon
+### Polygon - TODO: upgrade
 - DixelClubV2Factory: [0xa8F498E42884677b4055bEE3cc9970f4A8555ff9](https://polygonscan.com/address/0xa8F498E42884677b4055bEE3cc9970f4A8555ff9#code)
 - DixelClubV2NFT: [0x1bD78fD584E315fB0593d643a3E242BC37C4d615](https://polygonscan.com/address/0x1bD78fD584E315fB0593d643a3E242BC37C4d615#code)
 
-### Klaytn
+### Klaytn - TODO: upgrade
 - DixelClubV2Factory: [0x31B8eb1d3DcB2C333e5d70cAA022855ffdBD0fDA](https://kaiascope.com/account/0x31B8eb1d3DcB2C333e5d70cAA022855ffdBD0fDA?tabId=contractCode)
 - DixelClubV2NFT (implementation): [0x258e69403866CE766A6Df866ca27C1e4B1C8Bde1](https://kaiascope.com/account/0x258e69403866CE766A6Df866ca27C1e4B1C8Bde1?tabId=contractCode)
+
+### Base Sepolia
+- DixelClubV2Factory: [0xC14d558AfFE9457E620338E7f2166Ae29E884463](https://sepolia.basescan.org/address/0xC14d558AfFE9457E620338E7f2166Ae29E884463#code)
+- DixelClubV2NFT (implementation): [0xB43826E079dFB2e2b48a0a473Efc7F1fe6391763](https://sepolia.basescan.org/address/0xB43826E079dFB2e2b48a0a473Efc7F1fe6391763#code)
 
 
 ## Deploy
