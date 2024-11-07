@@ -46,6 +46,8 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
     error DixelClubV2__AlreadyStarted();
     error DixelClubV2__DescriptionTooLong();
     error DixelClubV2__WhiteListValueDoNotMatch(address expected, address actual);
+    error DixelClubV2__FeeTransferFailed();
+    error DixelClubV2__MintingCostTransferFailed();
 
     struct EditionData {
         uint24[PALETTE_SIZE] palette; // 24bit color (16,777,216) - up to 16 colors
@@ -133,21 +135,29 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     function _mintWithFees(address to, uint24[PALETTE_SIZE] calldata palette) private {
         uint256 mintingCost = uint256(_metaData.mintingCost);
+        uint256 flatFee = _factory.flatFee();
 
-        if (msg.value != mintingCost) revert DixelClubV2__InvalidCost(mintingCost, msg.value);
+        if (msg.value != mintingCost + flatFee) revert DixelClubV2__InvalidCost(mintingCost + flatFee, msg.value);
         if (nextTokenId() >= _metaData.maxSupply) revert DixelClubV2__MaximumMinted();
         if (uint40(block.timestamp) < _metaData.mintingBeginsFrom)
             revert DixelClubV2__NotStarted(_metaData.mintingBeginsFrom, uint40(block.timestamp));
 
+        // Forward fees and the minting cost to the creator and the protocol beneficiary
+        address beneficiary = _factory.beneficiary();
         if (mintingCost > 0) {
-            // Send fee to the beneficiary
             uint256 fee = (mintingCost * _factory.mintingFee()) / FRICTION_BASE;
-            (bool sent, ) = (_factory.beneficiary()).call{value: fee}("");
-            require(sent, "FEE_TRANSFER_FAILED");
 
-            // Send the rest of minting cost to the collection creator
-            (bool sent2, ) = (owner()).call{value: mintingCost - fee}("");
-            require(sent2, "MINTING_COST_TRANSFER_FAILED");
+            // beneficiary: fee + flatFee
+            (bool sent1, ) = beneficiary.call{value: fee + flatFee}("");
+            if (!sent1) revert DixelClubV2__FeeTransferFailed();
+
+            // creator: mintingCost - fee
+            (bool sent2, ) = owner().call{value: mintingCost - fee}("");
+            if (!sent2) revert DixelClubV2__MintingCostTransferFailed();
+        } else {
+            // beneficiary: flatFee
+            (bool sent, ) = beneficiary.call{value: flatFee}("");
+            if (!sent) revert DixelClubV2__FeeTransferFailed();
         }
 
         _mintNewEdition(to, palette);

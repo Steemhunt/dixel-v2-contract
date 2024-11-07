@@ -74,18 +74,18 @@ contract("DixelClubV2Factory", function(accounts) {
     });
 
     it("should be version 5 originally", async function () {
-      expect(await this.collection0.version()).to.be.bignumber.equal("4");
+      expect(await this.collection0.version()).to.be.bignumber.equal("5");
     });
 
     it("should be version 6 after updateImplementation", async function () {
-      expect(await this.collection1.version()).to.be.bignumber.equal("5");
+      expect(await this.collection1.version()).to.be.bignumber.equal("6");
     });
 
-    it("should be ramained as version 5 after one more creation", async function () {
+    it("should be ramained as version 6 after one more creation", async function () {
       await this.factory.createCollection(...this.testParams);
       const collection2 = await DixelClubV2NFT.at(await this.factory.collections("2"));
 
-      expect(await collection2.version()).to.be.bignumber.equal("5");
+      expect(await collection2.version()).to.be.bignumber.equal("6");
     });
   });
 
@@ -98,6 +98,11 @@ contract("DixelClubV2Factory", function(accounts) {
     it("should change creation fee to 0.123 ether", async function() {
       await this.factory.updateCreationFee(ether("0.123"));
       expect(await this.factory.creationFee()).to.be.bignumber.equal(ether("0.123"));
+    });
+
+    it("should change flat fee to 0.01 ether", async function() {
+      await this.factory.updateFlatFee(ether("0.01"));
+      expect(await this.factory.flatFee()).to.be.bignumber.equal(ether("0.01"));
     });
 
     it("should change minting fee to 10%", async function() {
@@ -135,11 +140,11 @@ contract("DixelClubV2Factory", function(accounts) {
       await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__InvalidMaxSupply");
     });
     it("should check if maxSupply is less than the max value", async function() {
-      this.testParams[3][2] = (await this.factory.MAX_SUPPLY()).add(new BN("1"));
+      this.testParams[3][2] = 1000001n;
       await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__InvalidMaxSupply");
     });
     it("should check if royaltyFriction is less than the max value", async function() {
-      this.testParams[3][3] = (await this.factory.MAX_ROYALTY_FRACTION()).add(new BN("1"));
+      this.testParams[3][3] = 5001n;
       await expectRevert(this.factory.createCollection(...this.testParams), "DixelClubV2Factory__InvalidRoyalty");
     });
     it("should check if description is over 1,000 characters", async function() {

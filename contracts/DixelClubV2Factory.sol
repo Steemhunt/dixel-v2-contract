@@ -24,9 +24,10 @@ contract DixelClubV2Factory is Constants, Ownable {
      */
     address public nftImplementation;
 
-    address public beneficiary = address(0x82CA6d313BffE56E9096b16633dfD414148D66b1);
-    uint256 public creationFee = 0.1 ether; // need to be updated for each chain
-    uint256 public mintingFee = 500; // 5%;
+    address public beneficiary = address(0xda5f7fd4C6e0e79e515759a587EE7e8EFeC6d280);
+    uint256 public creationFee = 0.000111 ether; // to be updated for each chain
+    uint256 public flatFee = 0.000111 ether; // to be updated for each chain
+    uint256 public mintingFee = 500; // 5% from creator for paid minting
 
     // Array of all created nft collections
     address[] public collections;
@@ -85,7 +86,7 @@ contract DixelClubV2Factory is Constants, Ownable {
         return nftAddress;
     }
 
-    // MARK: Admin functions
+    // MARK: - Admin functions
 
     // Admin functions to add a NFT to the collections manually for migration
     function addCollection(address nftAddress) external onlyOwner {
@@ -105,6 +106,10 @@ contract DixelClubV2Factory is Constants, Ownable {
     function updateMintingFee(uint256 newMintingFee) external onlyOwner {
         if (newMintingFee > FRICTION_BASE) revert DixelClubV2Factory__InvalidFee();
         mintingFee = newMintingFee;
+    }
+
+    function updateFlatFee(uint256 newFlatFee) external onlyOwner {
+        flatFee = newFlatFee;
     }
 
     function updateCreationFee(uint256 newCreationFee) external onlyOwner {
