@@ -17,6 +17,7 @@ contract DixelClubV2Factory is Constants, Ownable {
     error DixelClubV2Factory__InvalidCreationFee();
     error DixelClubV2Factory__ZeroAddress();
     error DixelClubV2Factory__InvalidFee();
+    error DixelClubV2Factory__CloneCreationFailed();
 
     /**
      *  EIP-1167: Minimal Proxy Contract - ERC721 Token implementation contract
@@ -76,6 +77,8 @@ contract DixelClubV2Factory is Constants, Ownable {
         }
 
         address nftAddress = _createClone(nftImplementation);
+        if (nftAddress == address(0)) revert DixelClubV2Factory__CloneCreationFailed();
+
         IDixelClubV2NFT newNFT = IDixelClubV2NFT(nftAddress);
         newNFT.init(msg.sender, name, symbol, description, metaData, palette, pixels);
 
