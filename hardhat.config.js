@@ -44,28 +44,24 @@ module.exports = {
     ethmain: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_ETH_API_KEY}`,
       chainId: 1,
-      gasPrice: 14000000000, // 14 gwei
       blockGasLimit: 29000000, // 29M
       accounts: [process.env.ETH_PRIVATE_KEY]
     },
     bscmain: {
       url: `https://bsc-dataseed.binance.org/`,
       chainId: 56,
-      gasPrice: 5600000000, // 5.2 GWei
       blockGasLimit: 60000000, // 60M
       accounts: [process.env.ETH_PRIVATE_KEY]
     },
     klaytnmain: {
       url: `https://public-en.node.kaia.io`,
       chainId: 8217,
-      gasPrice: 250000000000, // 250 ston
       blockGasLimit: 60000000, // 60M
       accounts: [process.env.ETH_PRIVATE_KEY]
     },
     polygonmain: {
       url: `https://polygon-rpc.com/`,
       chainId: 137,
-      gasPrice: 40000000000, // 40 Gwei
       blockGasLimit: 20000000, // 20M
       accounts: [process.env.ETH_PRIVATE_KEY]
     },

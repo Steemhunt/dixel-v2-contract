@@ -32,16 +32,16 @@ async function main() {
   let newAddress;
   switch(hre.network.name) {
     case 'ethmain':
-      newAddress = '';
+      newAddress = '0x43c71D3fAb7CE185C4D569f8fc3C93dF95334c57';
       break;
     case 'bscmain':
-      newAddress = '';
+      newAddress = '0x9326c3A25935d11a6510a0A4eb18233AB2963f38';
       break;
     case 'polygonmain':
-      newAddress = '';
+      newAddress = '0x0E5F42f6308C13dBf9c7e18B5bd956048A50486f';
       break;
     case 'klaytnmain':
-      newAddress = '';
+      newAddress = '0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e';
       break;
     default:
       console.log(`Invalid network ${hre.network.name}`);
@@ -64,6 +64,10 @@ async function main() {
     const name = await nft.name();
     const version = await nft.version();
 
+    // Get current gas price
+    const gasPrice = await hre.ethers.provider.getGasPrice();
+    console.log(`Current gas price: ${hre.ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`);
+
     const tx = await newFactory.addCollection(nft.address);
 
     console.log(`${i}: ${name} - ${nft.address} - v${version}`);
@@ -80,3 +84,12 @@ main()
     process.exit(1);
   });
 
+
+/*
+
+npx hardhat compile && npx hardhat run --network bscmain scripts/migrate-v5.js
+npx hardhat compile && npx hardhat run --network polygonmain scripts/migrate-v5.js
+npx hardhat compile && npx hardhat run --network klaytnmain scripts/migrate-v5.js
+npx hardhat compile && npx hardhat run --network ethmain scripts/migrate-v5.js
+
+*/
