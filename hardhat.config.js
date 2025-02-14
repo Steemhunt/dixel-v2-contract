@@ -66,7 +66,7 @@ module.exports = {
       accounts: [process.env.ETH_PRIVATE_KEY]
     },
     base: {
-      url: `https://base.drpc.org`,
+      url: `https://base-rpc.publicnode.com`,
       chainId: 8453,
       accounts: [process.env.ETH_PRIVATE_KEY]
     },

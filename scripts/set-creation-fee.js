@@ -1,5 +1,6 @@
 const hre = require("hardhat");
 const { ether } = require("@openzeppelin/test-helpers");
+const { ethers } = require("hardhat");
 
 async function main() {
   const config = {
@@ -31,10 +32,12 @@ async function main() {
 
   console.log(`Original creation feeon ${hre.network.name} = ${(await factory.creationFee()) / 1e18}`);
 
-  const tx = await factory.updateCreationFee(config[hre.network.name].fee.toString());
+  const flatFee = config[hre.network.name].fee.toString();
+  const creationFee = ethers.BigNumber.from(flatFee).mul(10); // 10x of flat fee (~$3.0)
+  const tx = await factory.updateCreationFee(creationFee);
   await tx.wait(2);
 
-  const tx2 = await factory.updateFlatFee(config[hre.network.name].fee.toString());
+  const tx2 = await factory.updateFlatFee(flatFee);
   await tx2.wait(2);
 
   console.log(`Creation fee updated on ${hre.network.name} = ${await factory.creationFee() / 1e18}`);
@@ -51,3 +54,5 @@ main()
 // npx hardhat run --network klaytnmain scripts/set-creation-fee.js
 // npx hardhat run --network polygonmain scripts/set-creation-fee.js
 // npx hardhat run --network bscmain scripts/set-creation-fee.js
+// npx hardhat run --network base scripts/set-creation-fee.js
+// npx hardhat run --network ethmain scripts/set-creation-fee.js
