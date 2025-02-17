@@ -30,6 +30,9 @@ import "./SVGGenerator.sol"; // inheriting Constants
 
 <Version 5>
 1. Hack to fix race condition on whitelist
+
+<Version 6>
+1. Fix race condition logic on whitelist
 */
 
 contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
@@ -115,7 +118,7 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
         // When race-condition happens, the whitelist index might be changed by other minting
         // In this case, retry with finding the correct index instead of reverting the transaction
-        if (_whitelist[whitelistIndex] != msg.sender) {
+        if (_whitelist.length <= whitelistIndex || _whitelist[whitelistIndex] != msg.sender) {
             // If index is wrong, try to find correct index
             whitelistIndex = getWhitelistIndex(msg.sender);
         }
@@ -438,6 +441,6 @@ contract DixelClubV2NFT is ERC721Queryable, Ownable, Constants, SVGGenerator {
 
     // NFT implementation version
     function version() external pure virtual returns (uint16) {
-        return 5;
+        return 6;
     }
 }

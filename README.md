@@ -36,27 +36,27 @@ Latest version: v2.9.262 / NFT version: 5
 
 ### Ethereum
 - DixelClubV2Factory: [0x43c71D3fAb7CE185C4D569f8fc3C93dF95334c57](https://etherscan.io/address/0x43c71D3fAb7CE185C4D569f8fc3C93dF95334c57#code)
-- DixelClubV2NFT (implementation): [0xd1C0a48972e4f45E5B627F767a2bDC9d0354d894](https://etherscan.io/address/0xd1C0a48972e4f45E5B627F767a2bDC9d0354d894#code)
+- DixelClubV2NFT (V6 implementation): [0x40ebDdC0A81836C8B3bdFd78a8C3928e14B90CaF](https://etherscan.io/address/0x40ebDdC0A81836C8B3bdFd78a8C3928e14B90CaF#code)
 
 ### Base
 - DixelClubV2Factory: [0x8b0Fdc91A4e0259ec6a29b3507a7Ea6E1d04A8fF](https://basescan.io/address/0x8b0Fdc91A4e0259ec6a29b3507a7Ea6E1d04A8fF#code)
-- DixelClubV2NFT (implementation): [0x3c176B2929FB96DaeaB9705B0A0959B1DDa32D10](https://basescan.io/address/0x3c176B2929FB96DaeaB9705B0A0959B1DDa32D10#code)
+- DixelClubV2NFT (V6 implementation): [0x66BF6409A52E634262BD04c0005562f229b03778](https://basescan.io/address/0x66BF6409A52E634262BD04c0005562f229b03778#code)
 
 ### BNB Chain
 - DixelClubV2Factory: [0x9326c3A25935d11a6510a0A4eb18233AB2963f38](https://bscscan.com/address/0x9326c3A25935d11a6510a0A4eb18233AB2963f38#code)
-- DixelClubV2NFT (implementation): [0xc8036F88c27B25326f205478808Db31D42459017](https://bscscan.com/address/0xc8036F88c27B25326f205478808Db31D42459017#code)
+- DixelClubV2NFT (V6 implementation): [0xED7cf5FdB58c752af0D59C4E76f38791ED648207](https://bscscan.com/address/0xED7cf5FdB58c752af0D59C4E76f38791ED648207#code)
 
 ### Polygon
 - DixelClubV2Factory: [0x0E5F42f6308C13dBf9c7e18B5bd956048A50486f](https://polygonscan.com/address/0x0E5F42f6308C13dBf9c7e18B5bd956048A50486f#code)
-- DixelClubV2NFT: [0xda24D1F0D608caC872421995F21803c789ADEe3F](https://polygonscan.com/address/0xda24D1F0D608caC872421995F21803c789ADEe3F#code)
+- DixelClubV2NFT: [0xA2A00Cd4aC9085c0E0Be7bd18Cf236D35E08C2B2](https://polygonscan.com/address/0xA2A00Cd4aC9085c0E0Be7bd18Cf236D35E08C2B2#code)
 
 ### Kaia
 - DixelClubV2Factory: [0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e](https://kaiascope.com/account/0x82b91E6DEDE8B8acDADe2212983DF946CA695d1e?tabId=contractCode)
-- DixelClubV2NFT (implementation): [0x1f3Af095CDa17d63cad238358837321e95FC5915](https://kaiascope.com/account/0x1f3Af095CDa17d63cad238358837321e95FC5915?tabId=contractCode)
+- DixelClubV2NFT (V6 implementation): [0x3057F94cA4F9c174E0050EeFe29144D56c104B45](https://kaiascope.com/account/0x3057F94cA4F9c174E0050EeFe29144D56c104B45?tabId=contractCode)
 
 ### Base Sepolia
 - DixelClubV2Factory: [0xC14d558AfFE9457E620338E7f2166Ae29E884463](https://sepolia.basescan.org/address/0xC14d558AfFE9457E620338E7f2166Ae29E884463#code)
-- DixelClubV2NFT (implementation): [0xB43826E079dFB2e2b48a0a473Efc7F1fe6391763](https://sepolia.basescan.org/address/0xB43826E079dFB2e2b48a0a473Efc7F1fe6391763#code)
+- DixelClubV2NFT (V5 implementation): [0xB43826E079dFB2e2b48a0a473Efc7F1fe6391763](https://sepolia.basescan.org/address/0xB43826E079dFB2e2b48a0a473Efc7F1fe6391763#code)
 
 
 ## Deploy
